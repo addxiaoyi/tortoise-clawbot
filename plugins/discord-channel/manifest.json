@@ -1,0 +1,60 @@
+{
+  "id": "discord-channel",
+  "name": "Discord Channel Plugin",
+  "version": "1.0.0",
+  "description": "Discord messaging channel integration for Tortoise",
+  "author": "Tortoise Team",
+  "license": "MIT",
+  "plugin_type": "channel",
+  "capabilities": {
+    "tools": [],
+    "resources": [],
+    "channels": [
+      {
+        "name": "discord",
+        "config_schema": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string",
+              "description": "Discord bot token",
+              "required": true,
+              "secret": true
+            },
+            "guild_id": {
+              "type": "string",
+              "description": "Discord guild/server ID"
+            },
+            "channels": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "Channel IDs to monitor"
+            }
+          }
+        }
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "name": "discord:read_messages",
+      "description": "Read messages from Discord channels",
+      "required": true
+    },
+    {
+      "name": "discord:send_messages",
+      "description": "Send messages to Discord channels",
+      "required": true
+    },
+    {
+      "name": "discord:manage_webhooks",
+      "description": "Manage webhooks for channel integration",
+      "required": false
+    }
+  ],
+  "dependencies": [],
+  "compatible_versions": {
+    "min": "0.1.0",
+    "max": null
+  }
+}

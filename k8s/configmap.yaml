@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tortoise-config
+  namespace: tortoise
+data:
+  tortoise.yaml: |
+    app:
+      name: Tortoise
+      version: 0.1.0
+      debug: false
+
+    server:
+      host: 0.0.0.0
+      port: 18792
+      api_port: 18793
+
+    storage:
+      data_dir: /data
+
+    database:
+      driver: postgres
+      host: postgres-svc
+      port: 5432
+      database: tortoise
+      username: tortoise
+      password: ${POSTGRES_PASSWORD}
+
+    redis:
+      host: redis-svc
+      port: 6379
+      db: 0
+
+    vector_db:
+      enabled: true
+      provider: qdrant
+      url: http://qdrant-svc:6333
+
+    models:
+      default: gpt-4o

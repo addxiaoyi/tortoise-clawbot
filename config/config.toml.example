@@ -1,0 +1,135 @@
+# Tortoise 配置文件示例
+# 复制此文件为 config.toml 并修改配置
+
+# === 基本配置 ===
+[general]
+# 应用名称
+name = "Tortoise"
+# 数据目录
+data_dir = "~/.tortoise"
+# 日志级别 (trace, debug, info, warn, error)
+log_level = "info"
+
+# === 代理配置 ===
+[agent]
+# 代理 ID
+id = "default"
+# 代理名称
+name = "Tortoise"
+
+# === 模型配置 ===
+[agent.model]
+# 提供商 (openai, anthropic, google, ollama, groq, openrouter, lmstudio, custom)
+provider = "ollama"
+# 模型名称
+model = "llama3"
+# API 地址 (可选)
+base_url = "http://localhost:11434"
+# API Key (可选)
+api_key = ""
+# 最大上下文长度
+max_context = 8192
+# 默认温度
+temperature = 0.7
+
+# === 思维模式 ===
+[agent.thinking]
+# 默认思维模式 (fast, balanced, deep, research, creative)
+default_mode = "balanced"
+# 启用思维链
+enable_chain = true
+# 思维缓存
+enable_cache = true
+
+# === 记忆配置 ===
+[memory]
+# 存储路径
+storage_path = "~/.tortoise/memory"
+# 短期记忆容量
+short_term_capacity = 100
+# 中期记忆容量
+medium_term_capacity = 1000
+# 长期记忆容量
+long_term_capacity = 10000
+# 遗忘阈值
+forgetting_threshold = 0.3
+# 向量维度
+embedding_dim = 1536
+
+# === 插件配置 ===
+[plugin]
+# 启用沙盒
+sandbox_enabled = true
+# 内存限制 (MB)
+memory_limit_mb = 128
+# CPU 限制 (%)
+cpu_limit_percent = 50
+# 允许的路径
+allowed_paths = []
+# 禁止的路径
+blocked_paths = ["/etc", "/root", "/sys"]
+
+# === 安全配置 ===
+[security]
+# 启用加密
+encryption_enabled = true
+# 启用威胁检测
+threat_detection_enabled = true
+# 启用信任检查
+trust_check_enabled = true
+# 启用审计日志
+audit_enabled = true
+
+# === 网络配置 ===
+[network]
+# 启用 P2P
+enabled = true
+# 端口 (0 = 随机)
+port = 0
+# 最大连接数
+max_connections = 100
+# 启用中继
+enable_relay = true
+# 启用 mDNS 发现
+enable_mdns = true
+# 引导节点
+bootstrap_nodes = []
+
+# === API 配置 ===
+[api]
+# HTTP 服务器
+[api.http]
+enabled = true
+bind = "127.0.0.1"
+port = 8080
+# CORS 允许的源
+cors_allowed_origins = ["*"]
+
+# WebSocket 服务器
+[api.websocket]
+enabled = true
+bind = "127.0.0.1"
+port = 8081
+
+# gRPC 服务器
+[api.grpc]
+enabled = true
+bind = "127.0.0.1"
+port = 8082
+
+# === 通道配置 ===
+[channels]
+# Discord
+[channels.discord]
+enabled = false
+token = ""
+
+# Telegram
+[channels.telegram]
+enabled = false
+bot_token = ""
+
+# === Redis 配置 ===
+[redis]
+enabled = false
+url = "redis://localhost:6379"

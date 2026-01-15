@@ -1,0 +1,93 @@
+# Tortoise Configuration
+
+app:
+  name: Tortoise
+  version: 0.1.0
+  debug: false
+
+server:
+  host: 0.0.0.0
+  port: 18792
+  api_port: 18793
+  read_timeout: 30
+  write_timeout: 30
+  max_connections: 10000
+
+storage:
+  data_dir: ./data
+  backup_enabled: true
+  backup_interval: 3600
+
+database:
+  driver: postgres
+  host: localhost
+  port: 5432
+  database: tortoise
+  username: tortoise
+  password: tortoise
+  max_connections: 10
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+  pool_size: 10
+
+vector_db:
+  enabled: false
+  provider: qdrant
+  url: http://localhost:6333
+  collection: tortoise_memory
+
+models:
+  default: gpt-4o
+  providers:
+    - name: openai
+      api_key: ${OPENAI_API_KEY}
+      base_url: https://api.openai.com/v1
+      rate_limit:
+        rpm: 60
+        tpm: 60000
+      fallback: anthropic
+
+    - name: anthropic
+      api_key: ${ANTHROPIC_API_KEY}
+      base_url: https://api.anthropic.com
+      rate_limit:
+        rpm: 50
+      fallback: gpt-4o-mini
+
+memory:
+  working_capacity: 100
+  semantic_dimension: 1536
+  semantic_max_entries: 10000
+  consolidation_interval: 300
+
+plugins:
+  enabled: true
+  plugin_dir: ./plugins
+  hot_reload: true
+
+channels:
+  telegram:
+    enabled: false
+    bot_token: ${TELEGRAM_BOT_TOKEN}
+
+  discord:
+    enabled: false
+    bot_token: ${DISCORD_BOT_TOKEN}
+
+security:
+  api_key_required: true
+  cors_allowed_origins:
+    - https://app.tortoise.ai
+    - http://localhost:3000
+  rate_limit:
+    requests_per_minute: 60
+    burst: 10
+
+logging:
+  level: info
+  format: json
+  output: stdout

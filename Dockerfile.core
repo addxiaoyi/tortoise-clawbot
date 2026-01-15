@@ -1,0 +1,59 @@
+# Tortoise Core Runtime Dockerfile
+FROM rust:1.75-slim-bookworm AS builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y \
+    pkg-config \
+    libssl-dev \
+    protobuf-compiler \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy manifests
+COPY core/Cargo.toml core/Cargo.lock ./
+COPY core/src ./src
+
+# Create dummy source for dependency caching
+RUN mkdir -p src && \
+    echo "fn main() {}" > src/main.rs && \
+    cargo build --release && \
+    rm -rf src
+
+# Copy actual source
+COPY core/src ./src
+
+# Build release
+RUN touch src/main.rs && \
+    cargo build --release && \
+    rm -rf /app/target/release/deps/main*
+
+# Runtime image
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    libssl3 \
+    && rm -rf /var/lib/apt/lists/* \
+    && useradd -m -s /bin/bash tortoise
+
+WORKDIR /app
+
+# Copy binary
+COPY --from=builder /app/target/release/tortoise-core /app/tortoise-core
+
+# Copy config
+COPY config/ ./config/
+
+# Create data directory
+RUN mkdir -p /app/data && chown -R tortoise:tortoise /app
+
+USER tortoise
+
+EXPOSE 18792 18793
+
+ENV RUST_LOG=info
+ENV TORTOISE_DATA_DIR=/app/data
+
+ENTRYPOINT ["/app/tortoise-core"]
+CMD ["run"]

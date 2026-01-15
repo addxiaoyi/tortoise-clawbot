@@ -1,0 +1,161 @@
+[package]
+name = "tortoise-core"
+version = "0.1.0"
+edition = "2021"
+description = "Tortoise - Super AI Agent Framework"
+authors = ["Tortoise Team"]
+license = "AGPL-3.0"
+repository = "https://github.com/tortoise-ai/tortoise"
+homepage = "https://tortoise.ai"
+readme = "README.md"
+rust-version = "1.75"
+
+[lib]
+name = "tortoise_core"
+path = "src/lib.rs"
+
+[[bin]]
+name = "tortoise"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.35", features = ["full"] }
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Error handling
+anyhow = "1.0"
+thiserror = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# UUID
+uuid = { version = "1.6", features = ["v4", "serde"] }
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+# Async channels
+flume = "0.11"
+
+# Regex for pattern matching
+regex = "1.10"
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json"] }
+
+# WebSocket
+tokio-tungstenite = "0.21"
+
+# URL handling
+url = "2.5"
+
+# Base64 encoding
+base64 = "0.21"
+
+# Environment variables
+dotenv = "0.15"
+
+# Async iterators
+futures = "0.3"
+
+# Async Mutex
+parking_lot = "0.12"
+dashmap = "5.5"
+
+# Zero-copy bytes
+bytes = "1.5"
+
+# Multipart form
+mime = "0.3"
+mime_guess = "2.0"
+
+# File watching
+notify = "6.1"
+
+# TOML parsing
+toml = "0.8"
+
+# YAML parsing
+yaml-rust2 = "0.9"
+
+# Command execution
+tokio-process = "0.3"
+
+# File paths
+dirs = "5.0"
+
+# Thread IDs
+thread-id = "4.3"
+
+# System info
+sysinfo = "0.29"
+
+# Memory allocator
+rpmalloc = "0.5"
+
+[dev-dependencies]
+# Testing
+tokio-test = "0.4"
+proptest = "1.4"
+criterion = "0.5"
+
+# Mocking
+mockall = "0.12"
+wiremock = "0.6"
+
+# Property testing
+quickcheck = "1.0"
+
+# Benchmarking
+divan = "0.1"
+
+# Documentation testing
+trybuild = "1.0"
+
+[features]
+default = ["full"]
+full = [
+    "tokio/full",
+    "serenity",
+    "teloxide",
+    "whatsapp",
+    "whapi",
+    "slack",
+    "matrix-sdk",
+    "signal",
+    "libp2p",
+    "rusqlite",
+    "redis",
+]
+serenity = []
+teloxide = []
+whatsapp = []
+whapi = []
+slack = []
+matrix-sdk = []
+signal = []
+libp2p = []
+rusqlite = []
+redis = []
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
+
+[profile.dev]
+opt-level = 0
+debug = true
+
+[profile.bench]
+inherits = "release"
+debug = true

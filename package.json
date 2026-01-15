@@ -1,0 +1,49 @@
+{
+  "name": "tohelp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tohelp: OpenClaw-based workspace with custom new-core plugins and prompts",
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "typecheck:src": "tsc --noEmit -p src/tsconfig.json",
+    "typecheck:tortoise": "tsc --noEmit -p tortoise/tsconfig.json && tsc --noEmit -p tortoise/tsconfig.node.json",
+    "typecheck:compat": "tsc --noEmit -p extensions/tsconfig.json",
+    "typecheck:all": "npm run typecheck && npm run typecheck:src && npm run typecheck:tortoise && npm run typecheck:compat",
+    "typecheck:openclaw": "node scripts/typecheck-openclaw.mjs",
+    "test": "vitest run",
+    "test:bridge": "vitest run src/bridge",
+    "test:watch": "vitest",
+    "lint": "eslint \"src/**/*.ts\" \"scripts/**/*.ts\" \"extensions/tohelp-openclaw/**/*.ts\" vitest.config.ts",
+    "lint:hermes": "eslint \"src/**/*.ts\" \"scripts/**/*.ts\" vitest.config.ts",
+    "ci": "npm run typecheck:all && npm run lint && npm test",
+    "doctor": "node scripts/dev-doctor.mjs",
+    "doctor:hermes": "node scripts/dev-doctor.mjs",
+    "doctor:openclaw": "node scripts/dev-doctor.mjs --compat-openclaw",
+    "doctor:secrets": "node scripts/doctor-secrets.mjs",
+    "doctor:secrets:strict": "node scripts/doctor-secrets.mjs --strict",
+    "doctor:secrets:ci": "node scripts/doctor-secrets.mjs --strict --ci",
+    "mcp:tohelp": "tsx src/mcp/tohelp-mcp-server.ts",
+    "mcp:hermes": "tsx src/mcp/tohelp-mcp-server.ts",
+    "runtime:hermes": "node scripts/hermes-runtime-server.mjs"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@sinclair/typebox": "0.34.48",
+    "dotenv": "^16.4.7",
+    "tsx": "^4.21.0",
+    "zod": "^4.3.6",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.5.0",
+    "eslint": "^10.2.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.58.0",
+    "vitest": "^3.2.4"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

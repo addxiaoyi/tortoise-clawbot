@@ -1,0 +1,10 @@
+{
+  "name": "@tohelp/openclaw-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local OpenClaw extension for the Tohelp workspace",
+  "type": "module",
+  "openclaw": {
+    "extensions": ["./index.ts"]
+  }
+}

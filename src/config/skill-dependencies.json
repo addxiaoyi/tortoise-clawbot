@@ -1,0 +1,64 @@
+{
+  "common": {
+    "dependencies": [],
+    "devDependencies": [
+      "@types/node",
+      "vitest",
+      "typescript"
+    ]
+  },
+  "plugins": {
+    "github": {
+      "external": ["gh-cli"],
+      "npm": []
+    },
+    "slack": {
+      "external": [],
+      "npm": []
+    },
+    "notion": {
+      "external": [],
+      "npm": []
+    },
+    "canvas": {
+      "external": [],
+      "npm": ["canvas", "pdf-lib"]
+    },
+    "office": {
+      "external": [],
+      "npm": ["officegen", "exceljs", "docx", "pptxgenjs"]
+    },
+    "code-review": {
+      "external": [],
+      "npm": ["diff", "gpt-3-encoder"]
+    },
+    "debugging": {
+      "external": [],
+      "npm": []
+    },
+    "git-workflow": {
+      "external": [],
+      "npm": ["simple-git"]
+    },
+    "planning": {
+      "external": [],
+      "npm": []
+    },
+    "documentation": {
+      "external": [],
+      "npm": []
+    },
+    "security": {
+      "external": [],
+      "npm": []
+    },
+    "web-builder": {
+      "external": [],
+      "npm": ["react", "react-dom", "tailwindcss", "esbuild"]
+    },
+    "testing": {
+      "external": [],
+      "npm": ["playwright", "vitest"]
+    }
+  }
+}

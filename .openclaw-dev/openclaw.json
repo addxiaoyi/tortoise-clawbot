@@ -1,0 +1,222 @@
+{
+  "meta": {
+    "lastTouchedVersion": "2026.3.9",
+    "lastTouchedAt": "2026-03-10T00:00:00.000Z"
+  },
+  "agents": {
+    "defaults": {
+      "workspace": "C:\\Users\\l\\.openclaw\\workspace-dev",
+      "skipBootstrap": true,
+      "compaction": {
+        "mode": "safeguard"
+      },
+      "model": {
+        "primary": "api-proxy-claude/claude-3-7-sonnet-20250219",
+        "fallbacks": [
+          "api-proxy-gpt/gpt-5.2",
+          "api-proxy-google/gemini-2.5-flash"
+        ]
+      }
+    },
+    "list": [
+      {
+        "id": "dev",
+        "default": true,
+        "workspace": "C:\\Users\\l\\.openclaw\\workspace-dev",
+        "identity": {
+          "name": "C3-PO",
+          "theme": "protocol droid",
+          "emoji": "🤖"
+        }
+      }
+    ]
+  },
+  "commands": {
+    "native": "auto",
+    "nativeSkills": "auto",
+    "restart": true,
+    "ownerDisplay": "raw"
+  },
+  "gateway": {
+    "mode": "local",
+    "bind": "loopback",
+    "auth": {
+      "mode": "token",
+      "token": "${OPENCLAW_GATEWAY_TOKEN}"
+    }
+  },
+  "plugins": {
+    "load": {
+      "paths": ["../extensions/tohelp-openclaw"]
+    },
+    "entries": {
+      "tohelp-openclaw": {
+        "enabled": true,
+        "config": {
+          "invokeTimeoutMs": 120000,
+          "skills": {}
+        }
+      }
+    }
+  },
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "api-proxy-claude": {
+        "baseUrl": "${ANTHROPIC_BASE_URL}",
+        "api": "anthropic-messages",
+        "apiKey": "${ANTHROPIC_API_KEY}",
+        "models": [
+          {
+            "id": "claude-3-7-sonnet-20250219",
+            "name": "Claude 3.7 Sonnet",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "cost": {
+              "input": 3,
+              "output": 15,
+              "cacheRead": 0.3,
+              "cacheWrite": 3.75
+            },
+            "contextWindow": 200000,
+            "maxTokens": 8192
+          }
+        ]
+      },
+      "api-proxy-gpt": {
+        "baseUrl": "${OPENAI_BASE_URL}",
+        "api": "openai-completions",
+        "apiKey": "${OPENAI_API_KEY}",
+        "models": [
+          {
+            "id": "gpt-5.2",
+            "name": "GPT-5.2",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "cost": {
+              "input": 5,
+              "output": 15,
+              "cacheRead": 2.5,
+              "cacheWrite": 5
+            },
+            "contextWindow": 128000,
+            "maxTokens": 16384
+          }
+        ]
+      },
+      "api-proxy-google": {
+        "baseUrl": "${GOOGLE_BASE_URL}",
+        "api": "google-generative-ai",
+        "apiKey": "${GOOGLE_API_KEY}",
+        "models": [
+          {
+            "id": "gemini-2.5-flash",
+            "name": "Gemini 2.5 Flash",
+            "reasoning": false,
+            "input": ["text", "image"],
+            "cost": {
+              "input": 0.1,
+              "output": 0.4,
+              "cacheRead": 0.025,
+              "cacheWrite": 0.1
+            },
+            "contextWindow": 1000000,
+            "maxTokens": 8192
+          }
+        ]
+      },
+      "custom-local": {
+        "baseUrl": "${CUSTOM_LOCAL_BASE_URL}",
+        "api": "openai-completions",
+        "apiKey": "${CUSTOM_LOCAL_API_KEY}",
+        "models": [
+          {
+            "id": "llama3",
+            "name": "Local Llama 3",
+            "contextWindow": 8192,
+            "maxTokens": 4096
+          }
+        ]
+      },
+      "openrouter": {
+        "baseUrl": "${OPENROUTER_BASE_URL}",
+        "api": "openai-completions",
+        "apiKey": "${OPENROUTER_API_KEY}",
+        "models": [
+          { "id": "anthropic/claude-3.5-sonnet", "name": "OR: Claude 3.5 Sonnet", "contextWindow": 200000, "maxTokens": 8192 },
+          { "id": "openai/gpt-4o", "name": "OR: GPT-4o", "contextWindow": 128000, "maxTokens": 4096 },
+          { "id": "google/gemini-pro-1.5", "name": "OR: Gemini Pro 1.5", "contextWindow": 1000000, "maxTokens": 8192 },
+          { "id": "meta-llama/llama-3-70b-instruct", "name": "OR: Llama 3 70B", "contextWindow": 8192, "maxTokens": 4096 }
+        ]
+      },
+      "groq": {
+        "baseUrl": "${GROQ_BASE_URL}",
+        "api": "openai-completions",
+        "apiKey": "${GROQ_API_KEY}",
+        "models": [
+          { "id": "llama3-70b-8192", "name": "Groq: Llama 3 70B", "contextWindow": 8192, "maxTokens": 8192 },
+          { "id": "mixtral-8x7b-32768", "name": "Groq: Mixtral 8x7B", "contextWindow": 32768, "maxTokens": 32768 }
+        ]
+      },
+      "perplexity": {
+        "baseUrl": "${PERPLEXITY_BASE_URL}",
+        "api": "openai-completions",
+        "apiKey": "${PERPLEXITY_API_KEY}",
+        "models": [
+          { "id": "llama-3-sonar-large-32k-online", "name": "Pplx: Llama 3 Sonar Large Online", "contextWindow": 32768, "maxTokens": 4096 }
+        ]
+      },
+      "mistral": {
+        "baseUrl": "${MISTRAL_BASE_URL}",
+        "api": "openai-completions",
+        "apiKey": "${MISTRAL_API_KEY}",
+        "models": [
+          { "id": "mistral-large-latest", "name": "Mistral Large", "contextWindow": 32768, "maxTokens": 4096 }
+        ]
+      },
+      "together": {
+        "baseUrl": "${TOGETHER_BASE_URL}",
+        "api": "openai-completions",
+        "apiKey": "${TOGETHER_API_KEY}",
+        "models": [
+          { "id": "meta-llama/Llama-3-70b-chat-hf", "name": "Together: Llama 3 70B", "contextWindow": 8192, "maxTokens": 4096 }
+        ]
+      },
+      "deepseek": {
+        "baseUrl": "${DEEPSEEK_BASE_URL}",
+        "api": "openai-completions",
+        "apiKey": "${DEEPSEEK_API_KEY}",
+        "models": [
+          {
+            "id": "deepseek-chat",
+            "name": "DeepSeek V3",
+            "contextWindow": 32000,
+            "maxTokens": 4096
+          },
+          {
+            "id": "deepseek-reasoner",
+            "name": "DeepSeek R1",
+            "reasoning": true,
+            "contextWindow": 32000,
+            "maxTokens": 4096
+          }
+        ]
+      },
+      "custom-2": {
+        "baseUrl": "${CUSTOM_2_BASE_URL}",
+        "api": "openai-completions",
+        "apiKey": "${CUSTOM_2_API_KEY}",
+        "models": [
+          {
+            "id": "custom-model-2",
+            "name": "Custom Model (Port 2)",
+            "contextWindow": 4096
+          }
+        ]
+      }
+    },
+    "bedrockDiscovery": {
+      "enabled": false
+    }
+  }
+}

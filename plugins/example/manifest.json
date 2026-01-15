@@ -1,0 +1,60 @@
+{
+  "id": "example-weather",
+  "name": "Weather Plugin",
+  "version": "1.0.0",
+  "description": "Get real-time weather information for any location",
+  "author": "Tortoise Team",
+  "homepage": "https://github.com/tortoise/plugins/tree/main/example-weather",
+  "repository": "https://github.com/tortoise/plugins",
+  "keywords": ["weather", "forecast", "climate"],
+  "channels": ["telegram", "discord", "slack"],
+  "permissions": ["http"],
+  "config": {
+    "apiKey": {
+      "type": "string",
+      "required": true,
+      "description": "OpenWeatherMap API key"
+    },
+    "units": {
+      "type": "string",
+      "default": "metric",
+      "enum": ["metric", "imperial", "standard"],
+      "description": "Temperature units"
+    }
+  },
+  "functions": [
+    {
+      "name": "get_weather",
+      "description": "Get current weather for a city",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "City name or coordinates"
+          }
+        },
+        "required": ["location"]
+      }
+    },
+    {
+      "name": "get_forecast",
+      "description": "Get 5-day weather forecast",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "location": {
+            "type": "string",
+            "description": "City name"
+          },
+          "days": {
+            "type": "number",
+            "default": 5,
+            "maximum": 5
+          }
+        },
+        "required": ["location"]
+      }
+    }
+  ]
+}

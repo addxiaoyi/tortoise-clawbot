@@ -1,0 +1,10 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=@LIB_INSTALL_DIR@
+includedir=@CMAKE_INSTALL_PREFIX}/include
+
+Name: tortoise
+Description: Tortoise Embedded C SDK
+Version: @TORTOISE_VERSION_MAJOR@.@TORTOISE_VERSION_MINOR@.@TORTOISE_VERSION_PATCH@
+Libs: -L${libdir} -ltortoise
+Cflags: -I${includedir}

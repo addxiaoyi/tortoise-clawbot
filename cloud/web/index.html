@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="zh-Hans">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tohelp Cloud 登录</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>Tohelp Cloud 登录</h1>
+      <p id="desc">最小登录页，直接对接 <code>cloud/cmd/server</code> 的 <code>/auth</code> 流程。</p>
+
+      <section class="card">
+        <h2>连接信息</h2>
+        <ul>
+          <li>API Base：<code id="apiBase">-</code></li>
+          <li>Auth Base Path：<code id="authPath">-</code></li>
+          <li>会话状态：<code id="sessionStatus">检查中...</code></li>
+        </ul>
+      </section>
+
+      <section class="actions">
+        <h2>邮箱登录</h2>
+        <p id="busyHint" class="hint">空闲</p>
+        <label class="field field-inline">
+          <span>日志过滤</span>
+          <select id="logFilter">
+            <option value="all">全部</option>
+            <option value="error">仅错误</option>
+          </select>
+        </label>
+        <form id="loginForm" class="form">
+          <label class="field">
+            <span>邮箱</span>
+            <input id="email" name="email" type="email" autocomplete="email" required />
+          </label>
+          <label class="field">
+            <span>密码</span>
+            <input
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              minlength="6"
+              required
+            />
+          </label>
+          <div class="row">
+            <button id="btnLogin" type="submit">登录</button>
+            <button id="btnSignup" type="button">注册账号</button>
+          </div>
+        </form>
+        <div class="row">
+          <button id="btnMe" type="button">读取 /api/me</button>
+          <button id="btnSignout" type="button">退出登录</button>
+          <button id="btnHealth" type="button">检查 /health</button>
+          <button id="btnClearLog" type="button">清空日志</button>
+          <button id="btnCopyLog" type="button">复制日志</button>
+          <button id="btnExportLog" type="button">导出日志</button>
+          <button id="btnExportErrorLog" type="button">导出错误日志</button>
+        </div>
+        <pre id="output">等待操作</pre>
+      </section>
+    </main>
+    <script type="module" src="/main.js"></script>
+  </body>
+  </html>

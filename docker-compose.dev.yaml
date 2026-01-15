@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Development environment
+  dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: tortoise-dev
+    ports:
+      - "18792:18792"
+      - "18793:18793"
+      - "9090:9090"  # Prometheus metrics
+    volumes:
+      - ./core:/app/core
+      - ./server:/app/server
+      - ./config:/app/config:ro
+      - tortoise-data:/app/data
+    environment:
+      - RUST_LOG=debug
+      - TORTOISE_DEBUG=true
+      - TORTOISE_DATA_DIR=/app/data
+    command: sleep infinity
+    networks:
+      - tortoise-dev-net
+
+  # Database services for development
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=tortoise_dev
+      - POSTGRES_USER=tortoise
+      - POSTGRES_PASSWORD=tortoise
+    volumes:
+      - tortoise-dev-data:/var/lib/postgresql/data
+    networks:
+      - tortoise-dev-net
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - tortoise-dev-redis:/data
+    networks:
+      - tortoise-dev-net
+
+volumes:
+  tortoise-dev-data:
+  tortoise-dev-redis:
+
+networks:
+  tortoise-dev-net:
+    driver: bridge

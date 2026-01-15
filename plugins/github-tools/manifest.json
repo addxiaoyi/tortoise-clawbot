@@ -1,0 +1,78 @@
+{
+  "id": "github-tools",
+  "name": "GitHub Tools Plugin",
+  "version": "1.0.0",
+  "description": "GitHub integration for Tortoise - issues, PRs, repos",
+  "author": "Tortoise Team",
+  "license": "MIT",
+  "plugin_type": "tool",
+  "capabilities": {
+    "tools": [
+      {
+        "name": "github_list_issues",
+        "description": "List issues in a repository",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "owner": { "type": "string" },
+            "repo": { "type": "string" },
+            "state": { "type": "string", "enum": ["open", "closed", "all"] },
+            "limit": { "type": "integer", "default": 10 }
+          },
+          "required": ["owner", "repo"]
+        }
+      },
+      {
+        "name": "github_create_issue",
+        "description": "Create a new issue",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "owner": { "type": "string" },
+            "repo": { "type": "string" },
+            "title": { "type": "string" },
+            "body": { "type": "string" },
+            "labels": { "type": "array", "items": { "type": "string" } }
+          },
+          "required": ["owner", "repo", "title"]
+        }
+      },
+      {
+        "name": "github_search_code",
+        "description": "Search code across repositories",
+        "input_schema": {
+          "type": "object",
+          "properties": {
+            "q": { "type": "string", "description": "Search query" },
+            "per_page": { "type": "integer", "default": 10 }
+          },
+          "required": ["q"]
+        }
+      }
+    ],
+    "resources": [
+      {
+        "uri_pattern": "github://{owner}/{repo}/issues",
+        "mime_types": ["application/json"]
+      }
+    ],
+    "channels": []
+  },
+  "permissions": [
+    {
+      "name": "github:read",
+      "description": "Read repositories, issues, and code",
+      "required": true
+    },
+    {
+      "name": "github:write",
+      "description": "Create and update issues, PRs",
+      "required": false
+    }
+  ],
+  "dependencies": [],
+  "compatible_versions": {
+    "min": "0.1.0",
+    "max": null
+  }
+}

@@ -1,0 +1,104 @@
+:root {
+  color-scheme: dark;
+  font-family: Inter, "Microsoft YaHei", system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #0b1020;
+  color: #e7ecff;
+}
+
+.container {
+  max-width: 860px;
+  margin: 48px auto;
+  padding: 0 16px;
+}
+
+h1 {
+  margin: 0 0 10px;
+  font-size: 28px;
+}
+
+.card,
+.actions {
+  background: #151c33;
+  border: 1px solid #263256;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+code {
+  color: #a8ffdc;
+}
+
+button {
+  border: none;
+  border-radius: 8px;
+  background: #4f8cff;
+  color: #fff;
+  padding: 10px 14px;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.form {
+  display: grid;
+  gap: 12px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field-inline {
+  margin-bottom: 12px;
+  max-width: 220px;
+}
+
+.field span {
+  color: #b8c7ee;
+  font-size: 13px;
+}
+
+.hint {
+  margin: 0 0 10px;
+  color: #9ab0e7;
+  font-size: 13px;
+}
+
+input {
+  border: 1px solid #324271;
+  border-radius: 8px;
+  background: #0f1630;
+  color: #e7ecff;
+  padding: 10px;
+}
+
+select {
+  border: 1px solid #324271;
+  border-radius: 8px;
+  background: #0f1630;
+  color: #e7ecff;
+  padding: 10px;
+}
+
+.row {
+  margin-top: 12px;
+  display: flex;
+  gap: 10px;
+}
+
+pre {
+  margin-top: 12px;
+  background: #0f1630;
+  border-radius: 8px;
+  padding: 12px;
+  white-space: pre-wrap;
+}

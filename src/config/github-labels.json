@@ -1,0 +1,11 @@
+{
+  "bug": ["error", "fail", "crash", "bug", "fix", "broken", "exception"],
+  "enhancement": ["feature", "add", "improve", "new", "implement", "support"],
+  "documentation": ["doc", "readme", "guide", "comment", "typo"],
+  "question": ["how", "help", "question", "why", "what"],
+  "wontfix": ["ignore", "skip", "wontfix"],
+  "duplicate": ["duplicate", "copy"],
+  "good first issue": ["easy", "starter", "good first issue"],
+  "help wanted": ["help wanted", "need help"],
+  "invalid": ["invalid", "wrong"]
+}

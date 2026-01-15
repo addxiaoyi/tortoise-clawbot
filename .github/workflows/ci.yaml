@@ -1,0 +1,213 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # Rust Core Tests
+  test-rust:
+    name: Test Rust Core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: core
+
+      - name: Check formatting
+        working-directory: core
+        run: cargo fmt --check
+
+      - name: Check clippy
+        working-directory: core
+        run: cargo clippy -- -D warnings
+
+      - name: Run tests
+        working-directory: core
+        run: cargo test --all-features
+
+      - name: Build release
+        working-directory: core
+        run: cargo build --release
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: core/target/coverage/lcov.info
+          flags: rust
+
+  # Go Server Tests
+  test-go:
+    name: Test Go Server
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.21'
+          cache: true
+          cache-dependency-path: server/go.sum
+
+      - name: Lint
+        working-directory: server
+        run: go vet ./...
+
+      - name: Test
+        working-directory: server
+        run: go test -v -race ./...
+
+      - name: Build
+        working-directory: server
+        run: go build -o tortoise-server ./cmd/gateway
+
+  # Flutter Tests
+  test-flutter:
+    name: Test Flutter UI
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.16.0'
+          channel: stable
+
+      - name: Install dependencies
+        working-directory: ui/flutter
+        run: flutter pub get
+
+      - name: Analyze
+        working-directory: ui/flutter
+        run: flutter analyze
+
+      - name: Test
+        working-directory: ui/flutter
+        run: flutter test
+
+  # TypeScript SDK Tests
+  test-typescript:
+    name: Test TypeScript SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: sdk/typescript/package-lock.json
+
+      - name: Install dependencies
+        working-directory: sdk/typescript
+        run: npm ci
+
+      - name: Lint
+        working-directory: sdk/typescript
+        run: npm run lint
+
+      - name: Test
+        working-directory: sdk/typescript
+        run: npm test
+
+  # Python SDK Tests
+  test-python:
+    name: Test Python SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        working-directory: sdk/python
+        run: pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check tortoise/
+
+      - name: Type check
+        run: mypy tortoise/
+
+      - name: Test
+        run: pytest
+
+  # Docker Build
+  docker:
+    name: Build Docker
+    runs-on: ubuntu-latest
+    needs: [test-rust, test-go]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push core image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.core
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ghcr.io/${{ github.repository }}/core:latest
+            ghcr.io/${{ github.repository }}/core:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push server image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile.server
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: |
+            ghcr.io/${{ github.repository }}/server:latest
+            ghcr.io/${{ github.repository }}/server:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Security scan
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'

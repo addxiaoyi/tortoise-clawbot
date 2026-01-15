@@ -1,0 +1,602 @@
+// Tortoise Protocol - 统一通信协议定义
+syntax = "proto3";
+
+package tortoise.protocol;
+
+option go_package = "github.com/tortoise/protocol/go;protocol";
+option java_multiple_files = true;
+option java_package = "com.tortoise.protocol";
+
+// ============================================
+// 基础消息类型
+// ============================================
+
+message Empty {}
+
+message Status {
+    bool success = 1;
+    string message = 2;
+    int32 code = 3;
+}
+
+// ============================================
+// 消息类型
+// ============================================
+
+enum MessageType {
+    MESSAGE_TYPE_UNSPECIFIED = 0;
+    MESSAGE_TYPE_TEXT = 1;
+    MESSAGE_TYPE_IMAGE = 2;
+    MESSAGE_TYPE_AUDIO = 3;
+    MESSAGE_TYPE_VIDEO = 4;
+    MESSAGE_TYPE_FILE = 5;
+    MESSAGE_TYPE_LOCATION = 6;
+    MESSAGE_TYPE_CONTACT = 7;
+}
+
+enum ContentFormat {
+    FORMAT_UNSPECIFIED = 0;
+    FORMAT_PLAIN = 1;
+    FORMAT_MARKDOWN = 2;
+    FORMAT_HTML = 3;
+    FORMAT_JSON = 4;
+}
+
+// ============================================
+// Agent 会话相关
+// ============================================
+
+message Session {
+    string id = 1;
+    string user_id = 2;
+    SessionState state = 3;
+    int64 created_at = 4;
+    int64 updated_at = 5;
+    map<string, string> metadata = 6;
+    ContextInfo context = 7;
+}
+
+enum SessionState {
+    SESSION_STATE_UNSPECIFIED = 0;
+    SESSION_STATE_ACTIVE = 1;
+    SESSION_STATE_PAUSED = 2;
+    SESSION_STATE_CLOSED = 3;
+}
+
+message ContextInfo {
+    repeated Message messages = 1;
+    int32 message_count = 2;
+    int32 max_context = 3;
+    int64 total_tokens = 4;
+}
+
+// ============================================
+// 消息
+// ============================================
+
+message Message {
+    string id = 1;
+    string session_id = 2;
+    string role = 3;  // user, assistant, system, tool
+    string content = 4;
+    ContentFormat format = 5;
+    MessageType type = 6;
+    int64 timestamp = 7;
+    map<string, string> metadata = 8;
+    repeated ToolCall tool_calls = 9;
+    ToolResult tool_result = 10;
+    string parent_id = 11;
+    bool is_streaming = 12;
+}
+
+message SendMessageRequest {
+    string session_id = 1;
+    string content = 2;
+    ContentFormat format = 3;
+    MessageType type = 4;
+    map<string, string> metadata = 5;
+    bool stream = 6;
+}
+
+message SendMessageResponse {
+    string message_id = 1;
+    string session_id = 2;
+    bool streaming = 3;
+}
+
+message MessageChunk {
+    string message_id = 1;
+    string content = 2;
+    bool is_final = 3;
+    string delta = 4;
+}
+
+message GetMessagesRequest {
+    string session_id = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+    string before_id = 4;
+}
+
+message GetMessagesResponse {
+    repeated Message messages = 1;
+    int32 total = 2;
+}
+
+// ============================================
+// 工具调用
+// ============================================
+
+message ToolDefinition {
+    string name = 1;
+    string description = 2;
+    repeated ToolParameter parameters = 3;
+    bool require_confirmation = 4;
+    string category = 5;
+    map<string, string> metadata = 6;
+}
+
+message ToolParameter {
+    string name = 1;
+    string type = 2;
+    string description = 3;
+    bool required = 4;
+    string default = 5;
+    repeated ToolParameterOption options = 6;
+}
+
+message ToolParameterOption {
+    string label = 1;
+    string value = 2;
+}
+
+message ToolCall {
+    string id = 1;
+    string tool_name = 2;
+    string arguments = 3;  // JSON string
+    int64 timestamp = 4;
+    ToolCallState state = 5;
+}
+
+enum ToolCallState {
+    TOOL_CALL_STATE_UNSPECIFIED = 0;
+    TOOL_CALL_STATE_PENDING = 1;
+    TOOL_CALL_STATE_RUNNING = 2;
+    TOOL_CALL_STATE_COMPLETED = 3;
+    TOOL_CALL_STATE_FAILED = 4;
+    TOOL_CALL_STATE_CANCELLED = 5;
+}
+
+message ToolResult {
+    string call_id = 1;
+    bool success = 2;
+    string result = 3;  // JSON string
+    string error = 4;
+    int64 duration_ms = 5;
+}
+
+// ============================================
+// 记忆系统
+// ============================================
+
+enum MemoryType {
+    MEMORY_TYPE_UNSPECIFIED = 0;
+    MEMORY_TYPE_WORKING = 1;
+    MEMORY_TYPE_SEMANTIC = 2;
+    MEMORY_TYPE_EPISODIC = 3;
+}
+
+message Memory {
+    string id = 1;
+    MemoryType type = 2;
+    string content = 3;
+    map<string, string> embeddings = 4;
+    float importance = 5;
+    int64 created_at = 6;
+    int64 accessed_at = 7;
+    map<string, string> metadata = 8;
+}
+
+message MemoryQuery {
+    string query = 1;
+    MemoryType type = 2;
+    int32 limit = 3;
+    float similarity_threshold = 4;
+}
+
+message MemoryQueryResult {
+    repeated Memory memories = 1;
+    repeated float scores = 2;
+}
+
+message SaveMemoryRequest {
+    MemoryType type = 1;
+    string content = 2;
+    float importance = 3;
+    map<string, string> metadata = 4;
+}
+
+message SaveMemoryResponse {
+    string memory_id = 1;
+}
+
+// ============================================
+// 插件系统
+// ============================================
+
+message Plugin {
+    string id = 1;
+    string name = 2;
+    string version = 3;
+    string description = 4;
+    PluginState state = 5;
+    repeated ToolDefinition tools = 6;
+    map<string, string> config = 7;
+    int64 installed_at = 8;
+}
+
+enum PluginState {
+    PLUGIN_STATE_UNSPECIFIED = 0;
+    PLUGIN_STATE_INSTALLED = 1;
+    PLUGIN_STATE_LOADED = 2;
+    PLUGIN_STATE_RUNNING = 3;
+    PLUGIN_STATE_DISABLED = 4;
+    PLUGIN_STATE_ERROR = 5;
+}
+
+message InstallPluginRequest {
+    string source = 1;  // URL or path
+    map<string, string> config = 2;
+}
+
+message UninstallPluginRequest {
+    string plugin_id = 1;
+    bool force = 2;
+}
+
+message ExecuteToolRequest {
+    string plugin_id = 1;
+    string tool_name = 2;
+    string arguments = 3;  // JSON string
+}
+
+message ExecuteToolResponse {
+    bool success = 1;
+    string result = 2;
+    string error = 3;
+    int64 duration_ms = 4;
+}
+
+// ============================================
+// AI 模型配置
+// ============================================
+
+enum ModelProvider {
+    MODEL_PROVIDER_UNSPECIFIED = 0;
+    MODEL_PROVIDER_OPENAI = 1;
+    MODEL_PROVIDER_ANTHROPIC = 2;
+    MODEL_PROVIDER_GOOGLE = 3;
+    MODEL_PROVIDER_OLLAMA = 4;
+    MODEL_PROVIDER_LOCAL = 5;
+}
+
+message ModelConfig {
+    ModelProvider provider = 1;
+    string model = 2;
+    string api_key = 3;
+    string base_url = 4;
+    float temperature = 5;
+    int32 max_tokens = 6;
+    float top_p = 7;
+    int32 top_k = 8;
+    repeated string stop = 9;
+    map<string, string> extra = 10;
+}
+
+message ChatRequest {
+    string session_id = 1;
+    repeated Message messages = 2;
+    ModelConfig model = 3;
+    repeated ToolDefinition tools = 4;
+    bool stream = 5;
+}
+
+message ChatResponse {
+    string message_id = 1;
+    Message message = 2;
+    UsageInfo usage = 3;
+    string finish_reason = 4;
+}
+
+message UsageInfo {
+    int32 prompt_tokens = 1;
+    int32 completion_tokens = 2;
+    int32 total_tokens = 3;
+}
+
+// ============================================
+// 渠道管理
+// ============================================
+
+enum ChannelType {
+    CHANNEL_TYPE_UNSPECIFIED = 0;
+    CHANNEL_TYPE_TELEGRAM = 1;
+    CHANNEL_TYPE_DISCORD = 2;
+    CHANNEL_TYPE_SLACK = 3;
+    CHANNEL_TYPE_WHATSAPP = 4;
+    CHANNEL_TYPE_WEB = 5;
+    CHANNEL_TYPE_WECHAT = 6;
+    CHANNEL_TYPE_LINE = 7;
+    CHANNEL_TYPE_SIGNAL = 8;
+    CHANNEL_TYPE_SMS = 9;
+}
+
+message Channel {
+    string id = 1;
+    ChannelType type = 2;
+    string name = 3;
+    ChannelState state = 4;
+    map<string, string> credentials = 5;
+    map<string, string> config = 6;
+    int64 created_at = 7;
+}
+
+enum ChannelState {
+    CHANNEL_STATE_UNSPECIFIED = 0;
+    CHANNEL_STATE_DISCONNECTED = 1;
+    CHANNEL_STATE_CONNECTING = 2;
+    CHANNEL_STATE_CONNECTED = 3;
+    CHANNEL_STATE_ERROR = 4;
+}
+
+message ConnectChannelRequest {
+    ChannelType type = 1;
+    map<string, string> credentials = 2;
+    map<string, string> config = 3;
+}
+
+message DisconnectChannelRequest {
+    string channel_id = 1;
+}
+
+// ============================================
+// Gateway 服务
+// ============================================
+
+message GatewayConfig {
+    string bind_address = 1;
+    int32 port = 2;
+    bool tls_enabled = 3;
+    string tls_cert = 4;
+    string tls_key = 5;
+    int32 max_connections = 6;
+    int32 connection_timeout_ms = 7;
+    int32 read_timeout_ms = 8;
+    int32 write_timeout_ms = 9;
+}
+
+message StartGatewayRequest {
+    GatewayConfig config = 1;
+}
+
+message StopGatewayRequest {}
+
+message GatewayStatus {
+    bool running = 1;
+    int32 port = 2;
+    int32 active_connections = 3;
+    int64 uptime_seconds = 4;
+    map<string, int64> metrics = 5;
+}
+
+// ============================================
+// 会话管理
+// ============================================
+
+message CreateSessionRequest {
+    string user_id = 1;
+    map<string, string> metadata = 2;
+}
+
+message CreateSessionResponse {
+    Session session = 1;
+}
+
+message GetSessionRequest {
+    string session_id = 1;
+}
+
+message DeleteSessionRequest {
+    string session_id = 1;
+}
+
+message ListSessionsRequest {
+    string user_id = 1;
+    int32 limit = 2;
+    int32 offset = 3;
+}
+
+message ListSessionsResponse {
+    repeated Session sessions = 1;
+    int32 total = 2;
+}
+
+// ============================================
+// 配置管理
+// ============================================
+
+message Config {
+    string version = 1;
+    GatewayConfig gateway = 2;
+    repeated ModelConfig models = 3;
+    repeated ChannelConfig channels = 4;
+    map<string, string> features = 5;
+}
+
+message ChannelConfig {
+    string id = 1;
+    ChannelType type = 2;
+    map<string, string> config = 3;
+}
+
+message GetConfigRequest {}
+
+message UpdateConfigRequest {
+    Config config = 1;
+}
+
+message ResetConfigRequest {}
+
+// ============================================
+// 监控和指标
+// ============================================
+
+message MetricsRequest {}
+
+message MetricsResponse {
+    int64 timestamp = 1;
+    SystemMetrics system = 2;
+    repeated SessionMetrics sessions = 3;
+    repeated ChannelMetrics channels = 4;
+    map<string, string> custom = 5;
+}
+
+message SystemMetrics {
+    int32 cpu_percent = 1;
+    int64 memory_used_bytes = 2;
+    int64 memory_total_bytes = 3;
+    int32 active_connections = 4;
+    int32 goroutines = 5;
+}
+
+message SessionMetrics {
+    string session_id = 1;
+    int32 message_count = 2;
+    int64 total_tokens = 3;
+    int64 last_activity = 4;
+}
+
+message ChannelMetrics {
+    string channel_id = 1;
+    ChannelType type = 2;
+    int32 message_count = 3;
+    int64 last_message = 4;
+}
+
+// ============================================
+// 事件流
+// ============================================
+
+message SubscribeRequest {
+    repeated EventType events = 1;
+    string session_id = 2;
+}
+
+enum EventType {
+    EVENT_TYPE_UNSPECIFIED = 0;
+    EVENT_TYPE_MESSAGE = 1;
+    EVENT_TYPE_SESSION = 2;
+    EVENT_TYPE_TOOL_CALL = 3;
+    EVENT_TYPE_ERROR = 4;
+    EVENT_TYPE_METRICS = 5;
+    EVENT_TYPE_CHANNEL = 6;
+}
+
+message Event {
+    EventType type = 1;
+    string id = 2;
+    int64 timestamp = 3;
+    oneof payload {
+        Message message = 10;
+        Session session = 11;
+        ToolCall tool_call = 12;
+        Error error = 13;
+        MetricsResponse metrics = 14;
+        Channel channel = 15;
+    }
+}
+
+message Error {
+    string code = 1;
+    string message = 2;
+    string details = 3;
+    string stack_trace = 4;
+}
+
+// ============================================
+// 健康检查
+// ============================================
+
+message HealthCheckRequest {}
+
+message HealthCheckResponse {
+    bool healthy = 1;
+    string version = 2;
+    int64 uptime_seconds = 3;
+    repeated HealthCheckComponent components = 4;
+}
+
+message HealthCheckComponent {
+    string name = 1;
+    bool healthy = 2;
+    string message = 3;
+}
+
+// ============================================
+// 流式响应服务
+// ============================================
+
+service TortoiseService {
+    // 健康检查
+    rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+
+    // 会话管理
+    rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+    rpc GetSession(GetSessionRequest) returns (Session);
+    rpc DeleteSession(DeleteSessionRequest) returns (Status);
+    rpc ListSessions(ListSessionsRequest) returns (ListSessionsResponse);
+
+    // 消息
+    rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+    rpc SendMessageStream(SendMessageRequest) returns (stream MessageChunk);
+    rpc GetMessages(GetMessagesRequest) returns (GetMessagesResponse);
+
+    // 工具
+    rpc ListTools(Empty) returns (stream ToolDefinition);
+    rpc ExecuteTool(ExecuteToolRequest) returns (ExecuteToolResponse);
+
+    // 记忆
+    rpc QueryMemory(MemoryQuery) returns (MemoryQueryResult);
+    rpc SaveMemory(SaveMemoryRequest) returns (SaveMemoryResponse);
+    rpc DeleteMemory(DeleteMemoryRequest) returns (Status);
+
+    // 插件
+    rpc ListPlugins(Empty) returns (stream Plugin);
+    rpc InstallPlugin(InstallPluginRequest) returns (Plugin);
+    rpc UninstallPlugin(UninstallPluginRequest) returns (Status);
+
+    // 渠道
+    rpc ListChannels(Empty) returns (stream Channel);
+    rpc ConnectChannel(ConnectChannelRequest) returns (Channel);
+    rpc DisconnectChannel(DisconnectChannelRequest) returns (Status);
+
+    // 配置
+    rpc GetConfig(GetConfigRequest) returns (Config);
+    rpc UpdateConfig(UpdateConfigRequest) returns (Status);
+
+    // Gateway
+    rpc StartGateway(StartGatewayRequest) returns (Status);
+    rpc StopGateway(StopGatewayRequest) returns (Status);
+    rpc GetGatewayStatus(Empty) returns (GatewayStatus);
+
+    // 监控
+    rpc GetMetrics(MetricsRequest) returns (MetricsResponse);
+
+    // 事件订阅
+    rpc Subscribe(SubscribeRequest) returns (stream Event);
+}
+
+// 删除记忆请求
+message DeleteMemoryRequest {
+    string memory_id = 1;
+}

@@ -1,0 +1,38 @@
+{
+  "name": "@tortoise/sdk",
+  "version": "0.1.0",
+  "description": "Tortoise AI Agent SDK for TypeScript/JavaScript",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/client.ts --format cjs,esm --dts --clean",
+    "dev": "tsup src/client.ts --format cjs,esm --watch",
+    "test": "vitest",
+    "lint": "eslint src/"
+  },
+  "keywords": [
+    "ai",
+    "agent",
+    "llm",
+    "openai",
+    "claude",
+    "tortoise"
+  ],
+  "author": "Tortoise Team",
+  "license": "Apache-2.0",
+  "peerDependencies": {},
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "tsup": "^7.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0"
+  }
+}

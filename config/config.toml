@@ -1,0 +1,105 @@
+# Tortoise Configuration File
+
+# Agent Configuration
+[agent]
+id = "tortoise-agent-001"
+name = "Tortoise"
+model_provider = "openai"
+model = "gpt-4"
+max_context = 128000
+temperature = 0.7
+tools_enabled = true
+
+# Model API Keys (can also be set via environment variables)
+[agent.openai]
+api_key = "${OPENAI_API_KEY}"
+base_url = "https://api.openai.com"
+
+[agent.anthropic]
+api_key = "${ANTHROPIC_API_KEY}"
+base_url = "https://api.anthropic.com"
+
+[agent.ollama]
+base_url = "http://localhost:11434"
+
+# Memory Configuration
+[memory]
+short_term_max_items = 100
+medium_term_max_items = 1000
+long_term_max_items = 10000
+promotion_threshold = 0.8
+forget_threshold = 0.2
+
+# Vector Store
+[memory.vector_store]
+provider = "in_memory"
+embedding_dim = 1536
+
+# Channel Configuration
+[[channels]]
+type = "discord"
+enabled = true
+
+[channels.discord]
+token = "${DISCORD_TOKEN}"
+allowed_channels = []
+mention_as_trigger = true
+dm_enabled = true
+
+[[channels]]
+type = "telegram"
+enabled = true
+
+[channels.telegram]
+bot_token = "${TELEGRAM_BOT_TOKEN}"
+allowed_chats = []
+
+# Plugin Configuration
+[plugins]
+plugin_dir = "plugins"
+wasm_memory_limit_mb = 128
+sandbox_enabled = true
+auto_load = true
+
+# Security Configuration
+[security]
+zero_trust = true
+e2e_encryption = true
+threat_detection = true
+audit_logging = true
+session_timeout_secs = 3600
+max_login_attempts = 5
+
+[security.password_requirements]
+min_length = 8
+require_uppercase = true
+require_lowercase = true
+require_numbers = true
+require_special = true
+
+# Network Configuration
+[network]
+enabled = false
+node_id = "tortoise-node-001"
+is_bootstrap = false
+
+[network.listen]
+addresses = ["/ip4/0.0.0.0/tcp/18789"]
+
+# P2P Bootstrap Nodes
+[[network.bootstrap_nodes]]
+peer_id = "QmBootstrap1"
+addresses = ["/ip4/1.2.3.4/tcp/18790"]
+
+# Logging Configuration
+[logging]
+level = "info"
+format = "json"
+output = "stdout"
+
+# Performance Configuration
+[performance]
+max_workers = 4
+queue_size = 1000
+cache_enabled = true
+cache_ttl_secs = 3600

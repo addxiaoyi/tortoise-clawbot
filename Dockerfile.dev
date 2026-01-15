@@ -1,0 +1,40 @@
+# Development Dockerfile
+FROM rust:1.75-bookworm AS rust-builder
+
+# Install Go
+RUN curl -fsSL https://go.dev/dl/go1.21.5.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+
+# Install Node.js
+RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install build tools
+RUN apt-get update && apt-get install -y \
+    protobuf-compiler \
+    libssl-dev \
+    pkg-config \
+    postgresql-client \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy manifests
+COPY core/Cargo.toml core/Cargo.lock ./
+COPY server/go.mod server/go.sum ./
+
+# Build Rust dependencies
+RUN mkdir -p core/src && \
+    echo "fn main() {}" > core/src/main.rs && \
+    cd core && cargo build --release 2>/dev/null || true && \
+    cd .. && rm -rf core/src
+
+# Copy source
+COPY core/ ./core/
+COPY server/ ./server/
+
+# Build Go server
+RUN cd server && go build -o tortoise-server ./cmd/gateway
+
+# Development entrypoint
+ENTRYPOINT ["/bin/bash"]

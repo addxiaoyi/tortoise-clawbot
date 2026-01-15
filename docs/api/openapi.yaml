@@ -1,0 +1,423 @@
+openapi: 3.0.0
+info:
+  title: Tortoise API
+  version: 0.1.0
+  description: |
+    Tortoise AI Agent Framework API
+    
+    ## 认证
+    所有 API 请求需要在 Header 中包含 API Key:
+    ```
+    Authorization: Bearer <api_key>
+    ```
+    
+    ## 速率限制
+    - 免费用户: 100 请求/分钟
+    - 付费用户: 1000 请求/分钟
+
+servers:
+  - url: http://localhost:8080/api
+    description: 本地开发服务器
+  - url: https://api.tortoise.ai/v1
+    description: 生产服务器
+
+paths:
+  # === 代理 API ===
+  /agent/status:
+    get:
+      summary: 获取代理状态
+      tags: [Agent]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentStatus'
+
+  /agent/chat:
+    post:
+      summary: 发送聊天消息
+      tags: [Agent]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRequest'
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatResponse'
+
+  /agent/stream:
+    get:
+      summary: 流式聊天
+      tags: [Agent]
+      parameters:
+        - name: message
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: thinking_mode
+          in: query
+          schema:
+            type: string
+            enum: [fast, balanced, deep, research, creative]
+      responses:
+        '200':
+          description: 流式响应
+          content:
+            text/event-stream:
+              schema:
+                type: string
+
+  # === 记忆 API ===
+  /memory:
+    get:
+      summary: 获取记忆列表
+      tags: [Memory]
+      parameters:
+        - name: type
+          in: query
+          schema:
+            $ref: '#/components/schemas/MemoryType'
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MemoryItem'
+
+    post:
+      summary: 添加记忆
+      tags: [Memory]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMemoryRequest'
+      responses:
+        '201':
+          description: 创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MemoryItem'
+
+  /memory/search:
+    get:
+      summary: 搜索记忆
+      tags: [Memory]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MemoryItem'
+
+  /memory/{id}:
+    delete:
+      summary: 删除记忆
+      tags: [Memory]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: 删除成功
+
+  # === 通道 API ===
+  /channels:
+    get:
+      summary: 获取通道列表
+      tags: [Channels]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Channel'
+
+  /channels/{id}/connect:
+    post:
+      summary: 连接通道
+      tags: [Channels]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 连接成功
+
+  /channels/{id}/disconnect:
+    post:
+      summary: 断开通道
+      tags: [Channels]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 断开成功
+
+  # === 插件 API ===
+  /plugins:
+    get:
+      summary: 获取插件列表
+      tags: [Plugins]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Plugin'
+
+  /plugins/{id}/enable:
+    post:
+      summary: 启用插件
+      tags: [Plugins]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 启用成功
+
+  /plugins/{id}/disable:
+    post:
+      summary: 禁用插件
+      tags: [Plugins]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 禁用成功
+
+  # === 设置 API ===
+  /settings:
+    get:
+      summary: 获取设置
+      tags: [Settings]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Settings'
+
+    put:
+      summary: 更新设置
+      tags: [Settings]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Settings'
+      responses:
+        '200':
+          description: 更新成功
+
+components:
+  schemas:
+    AgentStatus:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [idle, busy, error]
+        model:
+          type: string
+        uptime_seconds:
+          type: integer
+
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+        session_id:
+          type: string
+        thinking_mode:
+          type: string
+          enum: [fast, balanced, deep, research, creative]
+        temperature:
+          type: number
+          minimum: 0
+          maximum: 2
+        max_tokens:
+          type: integer
+
+    ChatResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        tool_calls:
+          type: array
+          items:
+            $ref: '#/components/schemas/ToolCall'
+        usage:
+          $ref: '#/components/schemas/TokenUsage'
+
+    MemoryType:
+      type: string
+      enum: [short_term, medium_term, long_term]
+
+    MemoryItem:
+      type: object
+      properties:
+        id:
+          type: string
+        content:
+          type: string
+        memory_type:
+          $ref: '#/components/schemas/MemoryType'
+        importance:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+
+    CreateMemoryRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+        importance:
+          type: number
+          minimum: 0
+          maximum: 1
+          default: 0.5
+
+    Channel:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        type:
+          type: string
+        is_connected:
+          type: boolean
+        last_message_at:
+          type: string
+          format: date-time
+
+    Plugin:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        is_enabled:
+          type: boolean
+        type:
+          type: string
+          enum: [channel, skill, tool, integration]
+
+    Settings:
+      type: object
+      properties:
+        model_provider:
+          type: string
+        model:
+          type: string
+        thinking_mode:
+          type: string
+        dark_mode:
+          type: boolean
+        language:
+          type: string
+        p2p_enabled:
+          type: boolean
+        encryption_enabled:
+          type: boolean
+
+    ToolCall:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        arguments:
+          type: object
+
+    TokenUsage:
+      type: object
+      properties:
+        prompt_tokens:
+          type: integer
+        completion_tokens:
+          type: integer
+        total_tokens:
+          type: integer
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization

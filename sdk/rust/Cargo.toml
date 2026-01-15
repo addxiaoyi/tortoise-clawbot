@@ -1,0 +1,53 @@
+[package]
+name = "tortoise-sdk"
+version = "1.0.0"
+edition = "2021"
+description = "Rust SDK for Tortoise AI Agent Framework"
+license = "MIT"
+repository = "https://github.com/tortoise-ai/tortoise"
+documentation = "https://docs.tortoise.ai/rust"
+authors = ["Tortoise Team"]
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.36", features = ["full"] }
+
+# HTTP client
+reqwest = { version = "0.11", features = ["json", "stream"] }
+
+# WebSocket
+tokio-tungstenite = { version = "0.21", features = ["native-tls"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Async utilities
+futures-util = "0.3"
+pin-project = "1.1"
+
+# Error handling
+thiserror = "1.0"
+anyhow = "1.0"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# URL handling
+url = "2.5"
+
+# Time
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+tokio-test = "0.4"
+mockito = "1.2"
+
+[[example]]
+name = "basic_chat"
+path = "examples/basic_chat.rs"
+
+[[example]]
+name = "stream_chat"
+path = "examples/stream_chat.rs"

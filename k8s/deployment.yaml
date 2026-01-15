@@ -1,0 +1,237 @@
+# ============ Kubernetes 配置 ============
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tortoise
+  labels:
+    app: tortoise
+
+---
+# ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tortoise-config
+  namespace: tortoise
+data:
+  PORT: "18792"
+  LOG_LEVEL: "info"
+  CORS_ALLOWED_ORIGINS: "*"
+
+---
+# Secret (使用外部 secrets 或 Vault)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: tortoise-secrets
+  namespace: tortoise
+type: Opaque
+stringData:
+  # 实际使用时使用 external secrets 或 Vault
+  # OPENAI_API_KEY: "sk-xxx"
+  # ANTHROPIC_API_KEY: "sk-ant-xxx"
+  # JWT_SECRET: "change-me"
+
+---
+# Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: tortoise-api
+  namespace: tortoise
+spec:
+  type: ClusterIP
+  ports:
+    - port: 18792
+      targetPort: 18792
+      protocol: TCP
+  selector:
+    app: tortoise-api
+
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tortoise-api
+  namespace: tortoise
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tortoise-api
+  template:
+    metadata:
+      labels:
+        app: tortoise-api
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "18792"
+        prometheus.io/path: "/metrics"
+    spec:
+      serviceAccountName: tortoise-api
+      
+      # 优雅终止
+      terminationGracePeriodSeconds: 30
+      
+      containers:
+        - name: api
+          image: tortoise:latest
+          imagePullPolicy: Always
+          
+          ports:
+            - containerPort: 18792
+              protocol: TCP
+          
+          env:
+            - name: PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: tortoise-config
+                  key: PORT
+            
+            - name: LOG_LEVEL
+              valueFrom:
+                configMapKeyRef:
+                  name: tortoise-config
+                  key: LOG_LEVEL
+            
+            # 从 Secret 读取敏感配置
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: tortoise-secrets
+                  key: OPENAI_API_KEY
+            
+            - name: REDIS_URL
+              value: "redis://redis:6379"
+            
+            - name: DB_TYPE
+              value: "redis"
+          
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          
+          livenessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 18792
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+            failureThreshold: 3
+          
+          readinessProbe:
+            httpGet:
+              path: /api/v1/health
+              port: 18792
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 10"]
+      
+      # 亲和性配置 (可选)
+      # affinity:
+      #   podAntiAffinity:
+      #     preferredDuringSchedulingIgnoredDuringExecution:
+      #       - weight: 100
+      #         podAffinityTerm:
+      #           labelSelector:
+      #             matchExpressions:
+      #               - key: app
+      #                 operator: In
+      #                 values:
+      #                   - tortoise-api
+      #           topologyKey: kubernetes.io/hostname
+
+---
+# HorizontalPodAutoscaler
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: tortoise-api-hpa
+  namespace: tortoise
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: tortoise-api
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 80
+
+---
+# PodDisruptionBudget
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: tortoise-api-pdb
+  namespace: tortoise
+spec:
+  minAvailable: 2
+  selector:
+    matchLabels:
+      app: tortoise-api
+
+---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: tortoise-ingress
+  namespace: tortoise
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: tortoise.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: tortoise-api
+                port:
+                  number: 18792
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: tortoise-api
+                port:
+                  number: 18792
+          - path: /ws
+            pathType: Prefix
+            backend:
+              service:
+                name: tortoise-api
+                port:
+                  number: 18792

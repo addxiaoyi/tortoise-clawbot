@@ -1,0 +1,147 @@
+# Default values for Tortoise Helm Chart
+
+replicaCount: 2
+
+image:
+  repository: ghcr.io/tortoise/server
+  pullPolicy: IfNotPresent
+  tag: latest
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+service:
+  type: ClusterIP
+  gateway:
+    port: 18792
+  api:
+    port: 18793
+
+ingress:
+  enabled: false
+  className: "nginx"
+  annotations: {}
+  hosts:
+    - host: tortoise.local
+      paths:
+        - path: /
+          pathType: Prefix
+  tls: []
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+# Application configuration
+config:
+  app:
+    name: Tortoise
+    version: "0.1.0"
+    debug: false
+
+  server:
+    host: "0.0.0.0"
+    port: 18792
+    apiPort: 18793
+    readTimeout: 30
+    writeTimeout: 30
+    maxConnections: 10000
+
+  # Database configuration
+  database:
+    driver: postgres
+    host: "postgresql"
+    port: 5432
+    name: tortoise
+    username: tortoise
+    password: tortoise
+
+  # Redis configuration
+  redis:
+    host: "redis"
+    port: 6379
+    db: 0
+
+  # Vector database configuration
+  qdrant:
+    enabled: false
+    url: "http://qdrant:6333"
+
+  # AI Model configuration
+  models:
+    default: gpt-4o
+    providers: []
+
+  # Memory configuration
+  memory:
+    workingCapacity: 100
+    semanticDimension: 1536
+    semanticMaxEntries: 10000
+
+  # Security
+  security:
+    apiKeyRequired: true
+    corsAllowedOrigins:
+      - "*"
+
+# External services
+postgresql:
+  enabled: true
+  auth:
+    database: tortoise
+    username: tortoise
+    password: tortoise
+  primary:
+    persistence:
+      enabled: true
+      size: 1Gi
+
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  commonConfiguration:
+    maxmemory: 256mb
+    maxmemory-policy: allkeys-lru
+
+qdrant:
+  enabled: false
+  persistence:
+    enabled: true
+    size: 1Gi
+
+# Metrics
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: false
+    interval: 30s
+
+# Tracing
+tracing:
+  enabled: false
+  endpoint: ""
+  samplingRate: 1.0

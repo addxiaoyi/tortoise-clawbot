@@ -1,0 +1,30 @@
+# SuperTokens Core + Postgres（本地开发）。BFF 见 cmd/server。
+services:
+  supertokens-db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: supertokens
+      POSTGRES_PASSWORD: supertokens
+      POSTGRES_DB: supertokens
+    ports:
+      - "5432:5432"
+    volumes:
+      - supertokens_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supertokens -d supertokens"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  supertokens:
+    image: registry.supertokens.io/supertokens/supertokens-postgresql:9.2
+    depends_on:
+      supertokens-db:
+        condition: service_healthy
+    ports:
+      - "3567:3567"
+    environment:
+      POSTGRESQL_CONNECTION_URI: postgresql://supertokens:supertokens@supertokens-db:5432/supertokens
+
+volumes:
+  supertokens_pg:

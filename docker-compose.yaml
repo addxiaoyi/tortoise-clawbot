@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # Tortoise Core (Rust Runtime)
+  core:
+    build:
+      context: .
+      dockerfile: Dockerfile.core
+    container_name: tortoise-core
+    ports:
+      - "18792:18792"
+      - "18793:18793"
+    volumes:
+      - ./config:/app/config:ro
+      - tortoise-data:/app/data
+    environment:
+      - RUST_LOG=info
+      - TORTOISE_DATA_DIR=/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:18792/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - tortoise-net
+
+  # Optional: Qdrant Vector Database
+  qdrant:
+    image: qdrant/qdrant:v1.7.0
+    container_name: tortoise-qdrant
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant-data:/qdrant/storage
+    environment:
+      - QDRANT__SERVICE__GRPC_PORT=6334
+    restart: unless-stopped
+    networks:
+      - tortoise-net
+
+  # Optional: Redis for session caching
+  redis:
+    image: redis:7-alpine
+    container_name: tortoise-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    command: redis-server --appendonly yes
+    restart: unless-stopped
+    networks:
+      - tortoise-net
+
+  # Optional: PostgreSQL for persistence
+  postgres:
+    image: postgres:16-alpine
+    container_name: tortoise-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=tortoise
+      - POSTGRES_USER=tortoise
+      - POSTGRES_PASSWORD=tortoise
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    restart: unless-stopped
+    networks:
+      - tortoise-net
+
+  # Optional: Nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    container_name: tortoise-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - core
+    restart: unless-stopped
+    networks:
+      - tortoise-net
+
+volumes:
+  tortoise-data:
+  qdrant-data:
+  redis-data:
+  postgres-data:
+
+networks:
+  tortoise-net:
+    driver: bridge

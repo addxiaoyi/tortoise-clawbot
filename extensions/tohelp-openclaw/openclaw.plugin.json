@@ -1,0 +1,21 @@
+{
+  "id": "tohelp-openclaw",
+  "configSchema": {
+    "type": "object",
+    "description": "Plugin config merged into bridge getConfig(); arbitrary top-level keys are allowed for shared secrets.",
+    "additionalProperties": true,
+    "properties": {
+      "invokeTimeoutMs": {
+        "type": "number",
+        "minimum": 100,
+        "maximum": 600000,
+        "description": "Default wall-clock timeout (ms) for tohelp_invoke_skill when the tool call does not set timeoutMs."
+      },
+      "skills": {
+        "type": "object",
+        "description": "Per-skill config merged over top-level keys for tohelp_invoke_skill (key = skill id, e.g. slack, notion).",
+        "additionalProperties": true
+      }
+    }
+  }
+}

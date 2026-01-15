@@ -1,0 +1,51 @@
+# Tortoise Server Dockerfile
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+
+# Install dependencies
+RUN apk add --no-cache git ca-certificates
+
+# Copy go mod files
+COPY server/go.mod server/go.sum ./
+
+# Download dependencies
+RUN go mod download
+
+# Copy source
+COPY server/ ./
+
+# Build
+RUN CGO_ENABLED=0 GOOS=linux go build \
+    -ldflags="-w -s" \
+    -o tortoise-server \
+    ./cmd/gateway
+
+# Runtime image
+FROM alpine:3.19
+
+RUN apk add --no-cache ca-certificates tzdata
+
+WORKDIR /app
+
+# Copy binary
+COPY --from=builder /app/tortoise-server /app/tortoise-server
+
+# Copy config
+COPY config/ ./config/
+
+# Create data directory
+RUN mkdir -p /app/data && \
+    adduser -D -g '' tortoise && \
+    chown -R tortoise /app
+
+USER tortoise
+
+EXPOSE 18792 18793
+
+ENV TORTOISE_DATA_DIR=/app/data
+ENV TORTOISE_PORT=18792
+ENV TORTOISE_API_PORT=18793
+
+ENTRYPOINT ["/app/tortoise-server"]
+CMD ["--config", "/app/config/tortoise.yaml"]

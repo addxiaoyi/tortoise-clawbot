@@ -1,0 +1,9 @@
+# Flutter build configuration
+# 这个文件用于配置Flutter构建选项
+
+build:
+  targets:
+    all:
+      defines:
+        FLUTTER_VERSION: "0.1.0"
+        BUILD_MODE: "development"

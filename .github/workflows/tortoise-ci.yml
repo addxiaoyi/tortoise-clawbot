@@ -1,0 +1,93 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  rust-core:
+    name: Rust Core
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Install Rust
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+          
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        
+      - name: Check formatting
+        run: cd tortoise-core && cargo fmt --check
+        
+      - name: Build
+        run: cd tortoise-core && cargo build --release
+        
+      - name: Run tests
+        run: cd tortoise-core && cargo test
+        
+      - name: Clippy
+        run: cd tortoise-core && cargo clippy -- -D warnings
+        
+  go-cloud:
+    name: Go Cloud
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+          
+      - name: Build
+        run: cd cloud && go build ./...
+        
+      - name: Test
+        run: cd cloud && go test ./...
+        
+  flutter-app:
+    name: Flutter App
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          
+      - name: Install dependencies
+        run: cd tortoise && flutter pub get
+        
+      - name: Analyze
+        run: cd tortoise && flutter analyze
+        
+      - name: Build web
+        run: cd tortoise && flutter build web
+        
+  typescript-sdk:
+    name: TypeScript SDK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: cd sdk/typescript && npm ci
+        
+      - name: Build
+        run: cd sdk/typescript && npm run build
+        
+      - name: Type check
+        run: cd sdk/typescript && npx tsc --noEmit

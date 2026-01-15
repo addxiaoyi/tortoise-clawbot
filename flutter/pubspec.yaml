@@ -1,0 +1,123 @@
+name: tortoise
+description: Tortoise - 下一代 AI 代理框架 (跨平台应用)
+publish_to: 'none'
+version: 0.1.0+1
+homepage: https://github.com/tortoise-ai/tortoise
+repository: https://github.com/tortoise-ai/tortoise
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  
+  # 状态管理
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+  
+  # 网络请求
+  dio: ^5.4.0
+  
+  # WebSocket
+  web_socket_channel: ^2.4.0
+  
+  # 本地存储
+  shared_preferences: ^2.2.2
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  
+  # 跨平台UI
+  go_router: ^13.1.0
+  
+  # 工具库
+  uuid: ^3.0.7  # 兼容 system_tray
+  intl: ^0.19.0
+  json_annotation: ^4.8.1
+  freezed_annotation: ^2.4.1
+  equatable: ^2.0.5
+  collection: ^1.18.0
+  
+  # 平台支持
+  window_manager: ^0.3.8  # 桌面窗口管理
+  system_tray: ^2.0.3     # 系统托盘
+  hotkey_manager: ^0.2.3   # 全局快捷键
+  path_provider: ^2.1.2    # 路径提供
+  url_launcher: ^6.2.4     # URL 启动
+  
+  # 权限管理
+  permission_handler: ^11.3.0
+  
+  # 媒体支持
+  image_picker: ^1.0.7
+  audio_session: ^0.1.18
+  speech_to_text: ^6.6.0
+  flutter_tts: ^4.0.2
+  
+  # 加密和安全
+  flutter_secure_storage: ^9.0.0
+  crypto: ^3.0.3
+  
+  # 通知
+  local_notifier: ^0.1.6
+  flutter_local_notifications: ^17.0.0
+  
+  # 系统信息
+  device_info_plus: ^9.1.1
+  package_info_plus: ^5.0.1
+  
+  # 文件操作
+  file_picker: ^6.1.1
+  path: ^1.9.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.1
+  build_runner: ^2.4.8
+  json_serializable: ^6.7.1
+  freezed: ^2.4.6
+  riverpod_generator: ^2.3.9
+  hive_generator: ^2.0.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/icons/
+    - assets/images/
+  
+  # 字体
+  # fonts:
+  #   - family: RobotoMono
+  #     fonts:
+  #       - asset: assets/fonts/RobotoMono-Regular.ttf
+
+# 平台特定配置
+windows:
+  artifact_name: tortoise.exe
+  icon: assets/icons/app_icon.ico
+  
+macos:
+  artifact_name: Tortoise.app
+  icon: assets/icons/app_icon.icns
+  entitlements:
+    path: macos/Runner/Tortoise.entitlements
+    properties:
+      com.apple.security.app-sandbox: false
+      com.apple.security.network.client: true
+      com.apple.security.network.server: true
+      com.apple.security.device.audio-input: true
+  
+linux:
+  artifact_name: tortoise
+  icon: assets/icons/app_icon.png
+
+android:
+  applicationId: ai.tortoise.app
+  icon: android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+
+ios:
+  bundleIdentifier: ai.tortoise.app
+  icon: ios/Runner/Assets.xcassets/AppIcon.appiconset
+  deploymentTarget: '14.0'
