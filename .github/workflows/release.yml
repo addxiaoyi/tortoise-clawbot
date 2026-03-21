@@ -1,0 +1,26 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号 (例如: v0.1.0)'
+        required: true
+        type: string
+        default: 'v0.1.0'
+
+permissions:
+  contents: write
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ inputs.version }}
+          name: 乌龟助手 ${{ inputs.version }}
+          draft: true
+          prerelease: false
+          generate_release_notes: true

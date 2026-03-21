@@ -1,4 +1,4 @@
-# 乌龟助手
+# 乌龟助手 (Tortoise)
 
 一款功能强大的 AI 助手桌面应用。
 
@@ -8,28 +8,21 @@
 
 ## 支持的平台
 
-- Windows x64
-- Windows x86
-- Linux x64
-- Linux x86
-- Linux ARM64
-- macOS x64
-- macOS ARM64
+- Windows x64 / x86
+- Linux x64 / x86 / ARM64
+- macOS x64 / ARM64
 
 ## 系统要求
 
 ### Windows
-- Windows 10 (版本 1803+) 或更高版本
-- WebView2 运行时
+- Windows 10+ with WebView2 runtime
 
 ### Linux
-- GTK 3.24+
-- WebKitGTK 4.1+
-- GLib 2.56+
+- GTK 3.24+, WebKitGTK 4.1+
 
 ### macOS
-- macOS 10.15 (Catalina) 或更高版本
+- macOS 10.15+
 
 ## 许可证
 
-本项目采用私有许可证。
+私有许可证
