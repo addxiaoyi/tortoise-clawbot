@@ -124,9 +124,13 @@ flutter run
 |------|------|------|
 | Telegram | ✅ | Bot API |
 | Discord | ✅ | Gateway |
-| Slack | 🚧 | 开发中 |
-| WhatsApp | 🚧 | 开发中 |
-| Email | 🚧 | 开发中 |
+| Slack | ✅ | Webhook + Events |
+| WhatsApp | ✅ | Baileys 协议 |
+| Matrix | ✅ | E2E 加密 |
+| Email | ✅ | SMTP/IMAP |
+| Signal | ✅ | 端到端加密 |
+| Microsoft Teams | ✅ | Bot Framework |
+| iMessage | ✅ | BlueBubbles |
 
 ### 🧠 记忆系统
 - 语义搜索
