@@ -50,15 +50,18 @@ type SQLiteDB struct {
 	db *sql.DB
 }
 
-// Session 会话
+// Session 会话 (支持分支和 DAG)
 type Session struct {
-	ID         string    `json:"id"`
-	UserID     string    `json:"user_id"`
-	Title      string    `json:"title"`
-	AIProvider string    `json:"ai_provider"`
-	Model      string    `json:"model"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID          string    `json:"id"`
+	UserID      string    `json:"user_id"`
+	ParentID    string    `json:"parent_id,omitempty"` // 父会话 ID，用于分支
+	Title       string    `json:"title"`
+	AIProvider  string    `json:"ai_provider"`
+	Model       string    `json:"model"`
+	IsBranch    bool      `json:"is_branch"`
+	BranchCount int       `json:"branch_count"` // 分支数量
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // Message 消息 (DAG 结构支持 parentId)
@@ -72,20 +75,6 @@ type Message struct {
 	Tokens     int       `json:"tokens"`
 	Metadata   string    `json:"metadata"` // JSON 字符串
 	CreatedAt  time.Time `json:"created_at"`
-}
-
-// Session 会话 (支持分支)
-type Session struct {
-	ID          string    `json:"id"`
-	UserID      string    `json:"user_id"`
-	ParentID    string    `json:"parent_id,omitempty"` // 父会话 ID，用于分支
-	Title       string    `json:"title"`
-	AIProvider  string    `json:"ai_provider"`
-	Model       string    `json:"model"`
-	IsBranch    bool      `json:"is_branch"`
-	BranchCount int       `json:"branch_count"` // 分支数量
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 // Memory 记忆
@@ -143,9 +132,12 @@ func (db *SQLiteDB) initTables() error {
 	CREATE TABLE IF NOT EXISTS sessions (
 		id TEXT PRIMARY KEY,
 		user_id TEXT NOT NULL,
+		parent_id TEXT,
 		title TEXT NOT NULL,
 		ai_provider TEXT,
 		model TEXT,
+		is_branch INTEGER DEFAULT 0,
+		branch_count INTEGER DEFAULT 0,
 		created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
 		updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 	);
@@ -153,6 +145,7 @@ func (db *SQLiteDB) initTables() error {
 	CREATE TABLE IF NOT EXISTS messages (
 		id TEXT PRIMARY KEY,
 		session_id TEXT NOT NULL,
+		parent_id TEXT,
 		role TEXT NOT NULL,
 		content TEXT NOT NULL,
 		model TEXT,
@@ -194,6 +187,7 @@ func (db *SQLiteDB) initTables() error {
 
 	CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 	CREATE INDEX IF NOT EXISTS idx_messages_session_id ON messages(session_id);
+	CREATE INDEX IF NOT EXISTS idx_messages_parent_id ON messages(parent_id);
 	CREATE INDEX IF NOT EXISTS idx_memories_user_id ON memories(user_id);
 	CREATE INDEX IF NOT EXISTS idx_channels_user_id ON channels(user_id);
 	`
@@ -211,10 +205,10 @@ func (db *SQLiteDB) Close() error {
 
 func (db *SQLiteDB) CreateSession(session *Session) error {
 	_, err := db.db.Exec(
-		`INSERT INTO sessions (id, user_id, title, ai_provider, model, created_at, updated_at) 
-		 VALUES (?, ?, ?, ?, ?, ?, ?)`,
-		session.ID, session.UserID, session.Title, session.AIProvider, session.Model,
-		session.CreatedAt, session.UpdatedAt,
+		`INSERT INTO sessions (id, user_id, parent_id, title, ai_provider, model, is_branch, branch_count, created_at, updated_at) 
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		session.ID, session.UserID, session.ParentID, session.Title, session.AIProvider, session.Model,
+		session.IsBranch, session.BranchCount, session.CreatedAt, session.UpdatedAt,
 	)
 	return err
 }
@@ -222,9 +216,9 @@ func (db *SQLiteDB) CreateSession(session *Session) error {
 func (db *SQLiteDB) GetSession(id string) (*Session, error) {
 	s := &Session{}
 	err := db.db.QueryRow(
-		`SELECT id, user_id, title, ai_provider, model, created_at, updated_at 
+		`SELECT id, user_id, parent_id, title, ai_provider, model, is_branch, branch_count, created_at, updated_at 
 		 FROM sessions WHERE id = ?`, id,
-	).Scan(&s.ID, &s.UserID, &s.Title, &s.AIProvider, &s.Model, &s.CreatedAt, &s.UpdatedAt)
+	).Scan(&s.ID, &s.UserID, &s.ParentID, &s.Title, &s.AIProvider, &s.Model, &s.IsBranch, &s.BranchCount, &s.CreatedAt, &s.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +227,7 @@ func (db *SQLiteDB) GetSession(id string) (*Session, error) {
 
 func (db *SQLiteDB) ListSessions(userID string, limit, offset int) ([]*Session, error) {
 	rows, err := db.db.Query(
-		`SELECT id, user_id, title, ai_provider, model, created_at, updated_at 
+		`SELECT id, user_id, parent_id, title, ai_provider, model, is_branch, branch_count, created_at, updated_at 
 		 FROM sessions WHERE user_id = ? ORDER BY updated_at DESC LIMIT ? OFFSET ?`,
 		userID, limit, offset,
 	)
@@ -245,7 +239,7 @@ func (db *SQLiteDB) ListSessions(userID string, limit, offset int) ([]*Session, 
 	var sessions []*Session
 	for rows.Next() {
 		s := &Session{}
-		if err := rows.Scan(&s.ID, &s.UserID, &s.Title, &s.AIProvider, &s.Model, &s.CreatedAt, &s.UpdatedAt); err != nil {
+		if err := rows.Scan(&s.ID, &s.UserID, &s.ParentID, &s.Title, &s.AIProvider, &s.Model, &s.IsBranch, &s.BranchCount, &s.CreatedAt, &s.UpdatedAt); err != nil {
 			return nil, err
 		}
 		sessions = append(sessions, s)
@@ -255,8 +249,8 @@ func (db *SQLiteDB) ListSessions(userID string, limit, offset int) ([]*Session, 
 
 func (db *SQLiteDB) UpdateSession(session *Session) error {
 	_, err := db.db.Exec(
-		`UPDATE sessions SET title = ?, ai_provider = ?, model = ?, updated_at = ? WHERE id = ?`,
-		session.Title, session.AIProvider, session.Model, session.UpdatedAt, session.ID,
+		`UPDATE sessions SET title = ?, ai_provider = ?, model = ?, is_branch = ?, branch_count = ?, updated_at = ? WHERE id = ?`,
+		session.Title, session.AIProvider, session.Model, session.IsBranch, session.BranchCount, session.UpdatedAt, session.ID,
 	)
 	return err
 }
@@ -270,9 +264,9 @@ func (db *SQLiteDB) DeleteSession(id string) error {
 
 func (db *SQLiteDB) CreateMessage(message *Message) error {
 	_, err := db.db.Exec(
-		`INSERT INTO messages (id, session_id, role, content, model, tokens, metadata, created_at) 
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-		message.ID, message.SessionID, message.Role, message.Content, message.Model,
+		`INSERT INTO messages (id, session_id, parent_id, role, content, model, tokens, metadata, created_at) 
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		message.ID, message.SessionID, message.ParentID, message.Role, message.Content, message.Model,
 		message.Tokens, message.Metadata, message.CreatedAt,
 	)
 	return err
@@ -281,9 +275,9 @@ func (db *SQLiteDB) CreateMessage(message *Message) error {
 func (db *SQLiteDB) GetMessage(id string) (*Message, error) {
 	m := &Message{}
 	err := db.db.QueryRow(
-		`SELECT id, session_id, role, content, model, tokens, metadata, created_at 
+		`SELECT id, session_id, parent_id, role, content, model, tokens, metadata, created_at 
 		 FROM messages WHERE id = ?`, id,
-	).Scan(&m.ID, &m.SessionID, &m.Role, &m.Content, &m.Model, &m.Tokens, &m.Metadata, &m.CreatedAt)
+	).Scan(&m.ID, &m.SessionID, &m.ParentID, &m.Role, &m.Content, &m.Model, &m.Tokens, &m.Metadata, &m.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -292,7 +286,7 @@ func (db *SQLiteDB) GetMessage(id string) (*Message, error) {
 
 func (db *SQLiteDB) ListMessages(sessionID string, limit, offset int) ([]*Message, error) {
 	rows, err := db.db.Query(
-		`SELECT id, session_id, role, content, model, tokens, metadata, created_at 
+		`SELECT id, session_id, parent_id, role, content, model, tokens, metadata, created_at 
 		 FROM messages WHERE session_id = ? ORDER BY created_at ASC LIMIT ? OFFSET ?`,
 		sessionID, limit, offset,
 	)
@@ -304,7 +298,7 @@ func (db *SQLiteDB) ListMessages(sessionID string, limit, offset int) ([]*Messag
 	var messages []*Message
 	for rows.Next() {
 		m := &Message{}
-		if err := rows.Scan(&m.ID, &m.SessionID, &m.Role, &m.Content, &m.Model, &m.Tokens, &m.Metadata, &m.CreatedAt); err != nil {
+		if err := rows.Scan(&m.ID, &m.SessionID, &m.ParentID, &m.Role, &m.Content, &m.Model, &m.Tokens, &m.Metadata, &m.CreatedAt); err != nil {
 			return nil, err
 		}
 		messages = append(messages, m)
