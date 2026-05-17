@@ -373,7 +373,7 @@ class _SessionTile extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               if (controller.text.isNotEmpty) {
-                ref.read(sessionsProvider.notifier).renameSession(
+                ref.read(sessionsProvider.notifier).updateTitle(
                   session.id,
                   controller.text,
                 );

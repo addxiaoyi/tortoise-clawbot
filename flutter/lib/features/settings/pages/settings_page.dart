@@ -72,7 +72,7 @@ class SettingsPage extends ConsumerWidget {
                 : null,
           ),
           ListTile(
-            leading: const Icon(Icons.sensitivity),
+            leading: const Icon(Icons.tune),
             title: const Text('灵敏度'),
             subtitle: Slider(
               value: settings.wakeSensitivity,
