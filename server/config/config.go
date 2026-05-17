@@ -14,6 +14,8 @@ type Config struct {
 	AI       AIConfig
 	Channels ChannelsConfig
 	Plugins  PluginsConfig
+	Matrix   MatrixConfig
+	Email    EmailConfig
 }
 
 // AppConfig 应用配置
@@ -62,7 +64,33 @@ type ChannelConfig struct {
 // PluginsConfig 插件配置
 type PluginsConfig struct {
 	Directory string
-	Registry string
+	Registry  string
+}
+
+// MatrixConfig Matrix 配置
+type MatrixConfig struct {
+	Enabled     bool
+	Homeserver  string
+	Username    string
+	Password    string
+	DeviceID    string
+	RoomID      string
+}
+
+// EmailConfig Email 配置
+type EmailConfig struct {
+	Enabled       bool
+	DisplayName   string
+	Username      string
+	Password      string
+	SMTPHost      string
+	SMTPPort      int
+	SMTPTLS       bool
+	SMTPEnabled   bool
+	IMAPHost      string
+	IMAPPort      int
+	IMAPEnabled   bool
+	PollInterval  int
 }
 
 // Load 加载配置
@@ -132,6 +160,28 @@ func Load() *Config {
 		Plugins: PluginsConfig{
 			Directory: getEnv("PLUGINS_DIR", "./plugins"),
 			Registry:  getEnv("PLUGINS_REGISTRY", "https://plugins.tortoise.ai"),
+		},
+		Matrix: MatrixConfig{
+			Enabled:     viper.GetBool("matrix.enabled"),
+			Homeserver:  getEnv("MATRIX_HOMESERVER", "https://matrix.org"),
+			Username:    getEnv("MATRIX_USERNAME", ""),
+			Password:    getEnv("MATRIX_PASSWORD", ""),
+			DeviceID:    getEnv("MATRIX_DEVICE_ID", "TortoiseBot"),
+			RoomID:      viper.GetString("matrix.room_id"),
+		},
+		Email: EmailConfig{
+			Enabled:      viper.GetBool("email.enabled"),
+			DisplayName:  getEnv("EMAIL_DISPLAY_NAME", "Tortoise Bot"),
+			Username:     getEnv("EMAIL_USERNAME", ""),
+			Password:     getEnv("EMAIL_PASSWORD", ""),
+			SMTPHost:     getEnv("SMTP_HOST", ""),
+			SMTPPort:     viper.GetInt("smtp.port"),
+			SMTPTLS:      viper.GetBool("smtp.tls"),
+			SMTPEnabled:  viper.GetBool("smtp.enabled"),
+			IMAPHost:     getEnv("IMAP_HOST", ""),
+			IMAPPort:     viper.GetInt("imap.port"),
+			IMAPEnabled:  viper.GetBool("imap.enabled"),
+			PollInterval: viper.GetInt("email.poll_interval"),
 		},
 	}
 
