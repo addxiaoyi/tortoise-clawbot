@@ -9,6 +9,9 @@ import '../../features/memory/pages/memory_page.dart';
 import '../../features/plugins/pages/plugins_page.dart';
 import '../../features/home/pages/home_page.dart';
 import '../../features/home/widgets/shell_scaffold.dart';
+import '../../features/voice/pages/voice_wake_page.dart';
+import '../../features/marketplace/pages/marketplace_page.dart';
+import '../../features/agents/pages/agents_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -61,6 +64,27 @@ final routerProvider = Provider<GoRouter>((ref) {
             name: 'plugins',
             pageBuilder: (context, state) => const NoTransitionPage(
               child: PluginsPage(),
+            ),
+          ),
+          GoRoute(
+            path: '/marketplace',
+            name: 'marketplace',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: MarketplacePage(),
+            ),
+          ),
+          GoRoute(
+            path: '/voice',
+            name: 'voice',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: VoiceWakePage(),
+            ),
+          ),
+          GoRoute(
+            path: '/agents',
+            name: 'agents',
+            pageBuilder: (context, state) => const NoTransitionPage(
+              child: AgentsPage(),
             ),
           ),
           GoRoute(

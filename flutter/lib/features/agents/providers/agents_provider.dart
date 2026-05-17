@@ -1,126 +1,46 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-// Agent role types
-enum AgentRole {
-  coordinator,
-  researcher,
-  coder,
-  reviewer,
-  executor,
-  specialist,
-}
-
 // Agent model
 class Agent {
   final String id;
   final String name;
+  final String model;
+  final String type;
   final String description;
-  final AgentRole role;
-  final List<String> skills;
-  final int maxConcurrentTasks;
-  final int priority;
-  final bool isActive;
+  final String instructions;
+  final List<String> capabilities;
+  final bool enabled;
 
   const Agent({
     required this.id,
     required this.name,
-    required this.description,
-    required this.role,
-    this.skills = const [],
-    this.maxConcurrentTasks = 3,
-    this.priority = 50,
-    this.isActive = true,
+    required this.model,
+    required this.type,
+    this.description = '',
+    this.instructions = '',
+    this.capabilities = const [],
+    this.enabled = true,
   });
 
   Agent copyWith({
     String? id,
     String? name,
+    String? model,
+    String? type,
     String? description,
-    AgentRole? role,
-    List<String>? skills,
-    int? maxConcurrentTasks,
-    int? priority,
-    bool? isActive,
+    String? instructions,
+    List<String>? capabilities,
+    bool? enabled,
   }) {
     return Agent(
       id: id ?? this.id,
       name: name ?? this.name,
+      model: model ?? this.model,
+      type: type ?? this.type,
       description: description ?? this.description,
-      role: role ?? this.role,
-      skills: skills ?? this.skills,
-      maxConcurrentTasks: maxConcurrentTasks ?? this.maxConcurrentTasks,
-      priority: priority ?? this.priority,
-      isActive: isActive ?? this.isActive,
-    );
-  }
-
-  factory Agent.fromJson(Map<String, dynamic> json) {
-    return Agent(
-      id: json['id'] ?? '',
-      name: json['name'] ?? '',
-      description: json['description'] ?? '',
-      role: AgentRole.values.firstWhere(
-        (e) => e.name == json['role'],
-        orElse: () => AgentRole.specialist,
-      ),
-      skills: List<String>.from(json['skills'] ?? []),
-      maxConcurrentTasks: json['max_concurrent_tasks'] ?? 3,
-      priority: json['priority'] ?? 50,
-      isActive: json['is_active'] ?? true,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'role': role.name,
-      'skills': skills,
-      'max_concurrent_tasks': maxConcurrentTasks,
-      'priority': priority,
-      'is_active': isActive,
-    };
-  }
-}
-
-// Task model
-class AgentTask {
-  final String id;
-  final String description;
-  final String status; // pending, running, completed, failed
-  final String? assignedAgentId;
-  final DateTime createdAt;
-  final DateTime? completedAt;
-  final dynamic result;
-
-  const AgentTask({
-    required this.id,
-    required this.description,
-    this.status = 'pending',
-    this.assignedAgentId,
-    required this.createdAt,
-    this.completedAt,
-    this.result,
-  });
-
-  AgentTask copyWith({
-    String? id,
-    String? description,
-    String? status,
-    String? assignedAgentId,
-    DateTime? createdAt,
-    DateTime? completedAt,
-    dynamic result,
-  }) {
-    return AgentTask(
-      id: id ?? this.id,
-      description: description ?? this.description,
-      status: status ?? this.status,
-      assignedAgentId: assignedAgentId ?? this.assignedAgentId,
-      createdAt: createdAt ?? this.createdAt,
-      completedAt: completedAt ?? this.completedAt,
-      result: result ?? this.result,
+      instructions: instructions ?? this.instructions,
+      capabilities: capabilities ?? this.capabilities,
+      enabled: enabled ?? this.enabled,
     );
   }
 }
@@ -128,39 +48,26 @@ class AgentTask {
 // Agents state
 class AgentsState {
   final List<Agent> agents;
-  final List<AgentTask> tasks;
   final bool isLoading;
   final String? error;
 
   const AgentsState({
     this.agents = const [],
-    this.tasks = const [],
     this.isLoading = false,
     this.error,
   });
 
   AgentsState copyWith({
     List<Agent>? agents,
-    List<AgentTask>? tasks,
     bool? isLoading,
     String? error,
   }) {
     return AgentsState(
       agents: agents ?? this.agents,
-      tasks: tasks ?? this.tasks,
       isLoading: isLoading ?? this.isLoading,
       error: error,
     );
   }
-
-  List<AgentTask> get pendingTasks =>
-      tasks.where((t) => t.status == 'pending').toList();
-
-  List<AgentTask> get runningTasks =>
-      tasks.where((t) => t.status == 'running').toList();
-
-  List<AgentTask> get completedTasks =>
-      tasks.where((t) => t.status == 'completed').toList();
 }
 
 // Agents notifier
@@ -175,122 +82,102 @@ class AgentsNotifier extends StateNotifier<AgentsState> {
         const Agent(
           id: 'coordinator-1',
           name: '主协调器',
+          model: 'claude-3-5-sonnet-20241022',
+          type: 'coordinator',
           description: '负责协调多个代理完成任务',
-          role: AgentRole.coordinator,
-          skills: ['planning', 'delegation', 'monitoring'],
-          maxConcurrentTasks: 3,
-          priority: 100,
+          instructions: '你是一个协调者，负责将复杂任务分解并分配给适当的代理。',
+          capabilities: ['任务分解', '代理协调', '进度监控'],
+          enabled: true,
         ),
         const Agent(
           id: 'researcher-1',
           name: '研究员',
+          model: 'claude-3-5-sonnet-20241022',
+          type: 'researcher',
           description: '收集和分析信息',
-          role: AgentRole.researcher,
-          skills: ['web-search', 'analysis', 'summarization'],
-          maxConcurrentTasks: 5,
-          priority: 50,
+          instructions: '你是一个研究员，负责搜索和分析各种信息源。',
+          capabilities: ['网络搜索', '数据分析', '摘要生成'],
+          enabled: true,
         ),
         const Agent(
           id: 'coder-1',
           name: '程序员',
+          model: 'claude-3-5-sonnet-20241022',
+          type: 'coder',
           description: '编写和重构代码',
-          role: AgentRole.coder,
-          skills: ['code-generation', 'code-review', 'debugging'],
-          maxConcurrentTasks: 3,
-          priority: 60,
+          instructions: '你是一个程序员，负责编写高质量的代码。',
+          capabilities: ['代码生成', '代码审查', '调试'],
+          enabled: true,
         ),
         const Agent(
-          id: 'reviewer-1',
-          name: '审查员',
+          id: 'critic-1',
+          name: '评论家',
+          model: 'claude-3-opus-20240229',
+          type: 'critic',
           description: '审查和评估工作质量',
-          role: AgentRole.reviewer,
-          skills: ['code-review', 'quality', 'security'],
-          maxConcurrentTasks: 4,
-          priority: 40,
+          instructions: '你是一个评论家，负责审查和评估工作质量。',
+          capabilities: ['代码审查', '质量评估', '安全检查'],
+          enabled: false,
         ),
         const Agent(
-          id: 'executor-1',
-          name: '执行器',
-          description: '执行命令和脚本',
-          role: AgentRole.executor,
-          skills: ['bash', 'git', 'deployment'],
-          maxConcurrentTasks: 2,
-          priority: 30,
-        ),
-      ],
-      tasks: [
-        AgentTask(
-          id: 'task-1',
-          description: '分析项目需求文档',
-          status: 'completed',
-          assignedAgentId: 'researcher-1',
-          createdAt: DateTime.now().subtract(const Duration(hours: 2)),
-          completedAt: DateTime.now().subtract(const Duration(hours: 1)),
-          result: '需求分析完成',
-        ),
-        AgentTask(
-          id: 'task-2',
-          description: '实现用户认证模块',
-          status: 'running',
-          assignedAgentId: 'coder-1',
-          createdAt: DateTime.now().subtract(const Duration(minutes: 30)),
-        ),
-        AgentTask(
-          id: 'task-3',
-          description: '编写单元测试',
-          status: 'pending',
-          createdAt: DateTime.now(),
+          id: 'summarizer-1',
+          name: '总结者',
+          model: 'claude-3-5-sonnet-20241022',
+          type: 'summarizer',
+          description: '总结和简化信息',
+          instructions: '你是一个总结者，负责将复杂信息简化为易于理解的摘要。',
+          capabilities: ['内容总结', '要点提取', '格式整理'],
+          enabled: false,
         ),
       ],
     );
   }
 
-  Future<void> createTask(String description) async {
-    final task = AgentTask(
-      id: 'task-${DateTime.now().millisecondsSinceEpoch}',
-      description: description,
-      createdAt: DateTime.now(),
+  Future<void> refreshAgents() async {
+    state = state.copyWith(isLoading: true);
+    await Future.delayed(const Duration(milliseconds: 500));
+    _loadSampleData();
+    state = state.copyWith(isLoading: false);
+  }
+
+  Future<void> addAgent(String name, String model, String instructions) async {
+    final agent = Agent(
+      id: 'agent-${DateTime.now().millisecondsSinceEpoch}',
+      name: name,
+      model: model,
+      type: 'coordinator',
+      instructions: instructions,
+      capabilities: ['通用能力'],
+      enabled: true,
     );
     
     state = state.copyWith(
-      tasks: [...state.tasks, task],
+      agents: [...state.agents, agent],
     );
   }
 
-  Future<void> assignTask(String taskId, String agentId) async {
+  Future<void> deleteAgent(String agentId) async {
     state = state.copyWith(
-      tasks: state.tasks.map((t) {
-        if (t.id == taskId) {
-          return t.copyWith(
-            assignedAgentId: agentId,
-            status: 'running',
-          );
-        }
-        return t;
-      }).toList(),
+      agents: state.agents.where((a) => a.id != agentId).toList(),
     );
   }
 
-  Future<void> completeTask(String taskId, dynamic result) async {
-    state = state.copyWith(
-      tasks: state.tasks.map((t) {
-        if (t.id == taskId) {
-          return t.copyWith(
-            status: 'completed',
-            completedAt: DateTime.now(),
-            result: result,
-          );
-        }
-        return t;
-      }).toList(),
-    );
-  }
-
-  Future<void> toggleAgent(String agentId) async {
+  Future<void> toggleAgent(String agentId, bool enabled) async {
     state = state.copyWith(
       agents: state.agents.map((a) {
         if (a.id == agentId) {
-          return a.copyWith(isActive: !a.isActive);
+          return a.copyWith(enabled: enabled);
+        }
+        return a;
+      }).toList(),
+    );
+  }
+
+  Future<void> updateAgent(Agent agent) async {
+    state = state.copyWith(
+      agents: state.agents.map((a) {
+        if (a.id == agent.id) {
+          return agent;
         }
         return a;
       }).toList(),
@@ -303,18 +190,18 @@ final agentsProvider = StateNotifierProvider<AgentsNotifier, AgentsState>((ref) 
   return AgentsNotifier();
 });
 
-// Selected agent filter
-final selectedAgentRoleProvider = StateProvider<AgentRole?>((ref) => null);
+// Selected agent role filter
+final selectedAgentTypeProvider = StateProvider<String?>((ref) => null);
 
 // Filtered agents
 final filteredAgentsProvider = Provider<List<Agent>>((ref) {
   final state = ref.watch(agentsProvider);
-  final roleFilter = ref.watch(selectedAgentRoleProvider);
+  final typeFilter = ref.watch(selectedAgentTypeProvider);
   
   var agents = state.agents;
   
-  if (roleFilter != null) {
-    agents = agents.where((a) => a.role == roleFilter).toList();
+  if (typeFilter != null) {
+    agents = agents.where((a) => a.type == typeFilter).toList();
   }
   
   return agents;

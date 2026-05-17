@@ -120,6 +120,21 @@ class _NavigationRail extends StatelessWidget {
           label: Text('插件'),
         ),
         NavigationRailDestination(
+          icon: Icon(Icons.store_outlined),
+          selectedIcon: Icon(Icons.store),
+          label: Text('市场'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.mic_outlined),
+          selectedIcon: Icon(Icons.mic),
+          label: Text('语音'),
+        ),
+        NavigationRailDestination(
+          icon: Icon(Icons.smart_toy_outlined),
+          selectedIcon: Icon(Icons.smart_toy),
+          label: Text('代理'),
+        ),
+        NavigationRailDestination(
           icon: Icon(Icons.settings_outlined),
           selectedIcon: Icon(Icons.settings),
           label: Text('设置'),
@@ -134,7 +149,10 @@ class _NavigationRail extends StatelessWidget {
     if (path.startsWith('/channels')) return 2;
     if (path.startsWith('/memory')) return 3;
     if (path.startsWith('/plugins')) return 4;
-    if (path.startsWith('/settings')) return 5;
+    if (path.startsWith('/marketplace')) return 5;
+    if (path.startsWith('/voice')) return 6;
+    if (path.startsWith('/agents')) return 7;
+    if (path.startsWith('/settings')) return 8;
     return 0;
   }
   
@@ -156,6 +174,15 @@ class _NavigationRail extends StatelessWidget {
         context.go('/plugins');
         break;
       case 5:
+        context.go('/marketplace');
+        break;
+      case 6:
+        context.go('/voice');
+        break;
+      case 7:
+        context.go('/agents');
+        break;
+      case 8:
         context.go('/settings');
         break;
     }
@@ -198,9 +225,9 @@ class _BottomNav extends StatelessWidget {
           label: '插件',
         ),
         NavigationDestination(
-          icon: Icon(Icons.settings_outlined),
-          selectedIcon: Icon(Icons.settings),
-          label: '设置',
+          icon: Icon(Icons.store_outlined),
+          selectedIcon: Icon(Icons.store),
+          label: '市场',
         ),
       ],
     );
@@ -212,7 +239,10 @@ class _BottomNav extends StatelessWidget {
     if (path.startsWith('/channels')) return 2;
     if (path.startsWith('/memory')) return 3;
     if (path.startsWith('/plugins')) return 4;
-    if (path.startsWith('/settings')) return 5;
+    if (path.startsWith('/marketplace')) return 5;
+    if (path.startsWith('/voice')) return 6;
+    if (path.startsWith('/agents')) return 7;
+    if (path.startsWith('/settings')) return 8;
     return 0;
   }
   
@@ -234,7 +264,7 @@ class _BottomNav extends StatelessWidget {
         context.go('/plugins');
         break;
       case 5:
-        context.go('/settings');
+        context.go('/marketplace');
         break;
     }
   }
