@@ -229,5 +229,5 @@ Apache 2.0 - 详见 [LICENSE](LICENSE)
 ---
 
 <p align="center">
-  Copyright © 2024
+  Copyright © 2026
 </p>
