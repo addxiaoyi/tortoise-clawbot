@@ -32,7 +32,7 @@ class _WideLayout extends StatelessWidget {
     return Scaffold(
       body: Row(
         children: [
-          _NavigationRail(),
+          const _NavigationRail(),
           const VerticalDivider(width: 1),
           Expanded(child: child),
         ],
@@ -50,12 +50,14 @@ class _NarrowLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: child,
-      bottomNavigationBar: _BottomNav(),
+      bottomNavigationBar: const _BottomNav(),
     );
   }
 }
 
 class _NavigationRail extends StatelessWidget {
+  const _NavigationRail();
+  
   @override
   Widget build(BuildContext context) {
     final currentPath = GoRouterState.of(context).uri.path;
@@ -190,6 +192,8 @@ class _NavigationRail extends StatelessWidget {
 }
 
 class _BottomNav extends StatelessWidget {
+  const _BottomNav();
+  
   @override
   Widget build(BuildContext context) {
     final currentPath = GoRouterState.of(context).uri.path;
