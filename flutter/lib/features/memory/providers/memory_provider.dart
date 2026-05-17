@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../models/memory_models.dart';
 
 // Memory types
 enum MemoryType {
