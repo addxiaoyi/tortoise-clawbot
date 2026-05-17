@@ -8,6 +8,8 @@ require (
 	github.com/gorilla/websocket v1.5.1
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/spf13/viper v1.18.2
+	github.com/whatsmeow/whatsmeow v0.0.0-20231205072517-a72c9d8c0c1e
+	golang.org/x/crypto v0.16.0
 )
 
 require (

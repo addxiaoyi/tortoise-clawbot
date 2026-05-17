@@ -7,13 +7,14 @@ WORKDIR /app
 RUN apk add --no-cache git ca-certificates
 
 # 复制 go mod 文件
-COPY go.mod go.sum ./
+COPY server/go.mod server/go.sum ./
 RUN go mod download
 
 # 复制源代码
-COPY . .
+COPY server ./server
 
 # 构建
+WORKDIR /app/server
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o tortoise-server ./cmd/api
 
 # ============ 生产镜像 ============
@@ -25,7 +26,7 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates curl
 
 # 复制二进制文件
-COPY --from=builder /app/tortoise-server .
+COPY --from=builder /app/server/tortoise-server .
 
 # 创建数据目录
 RUN mkdir -p /app/data
