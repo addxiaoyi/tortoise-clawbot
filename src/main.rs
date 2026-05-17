@@ -170,14 +170,66 @@ async fn start_tortoise(config_path: PathBuf) -> Result<()> {
 }
 
 async fn stop_tortoise() -> Result<()> {
+    use std::net::TcpStream;
+    use std::io::{Write, Read};
+    
     tracing::info!("Stopping Tortoise daemon...");
-    // TODO: Implement daemon communication
+    
+    let daemon_addr = "127.0.0.1:18792";
+    
+    match TcpStream::connect(daemon_addr) {
+        Ok(mut stream) => {
+            let cmd = "STOP\n";
+            stream.write_all(cmd.as_bytes())?;
+            
+            let mut response = [0u8; 1024];
+            match stream.read(&mut response) {
+                Ok(n) => {
+                    let response_str = String::from_utf8_lossy(&response[..n]);
+                    tracing::info!("Daemon response: {}", response_str.trim());
+                }
+                Err(e) => tracing::warn!("Failed to read daemon response: {}", e),
+            }
+            
+            tracing::info!("Stop signal sent to daemon");
+        }
+        Err(e) => {
+            tracing::warn!("Could not connect to daemon at {}: {}", daemon_addr, e);
+            tracing::info!("Daemon may not be running or is already stopped");
+        }
+    }
+    
     Ok(())
 }
 
 async fn send_message(content: String) -> Result<()> {
+    use std::net::TcpStream;
+    use std::io::{Write, Read};
+    
     tracing::info!("Sending message: {}", content);
-    // TODO: Implement message sending
+    
+    let daemon_addr = "127.0.0.1:18792";
+    
+    match TcpStream::connect(daemon_addr) {
+        Ok(mut stream) => {
+            let cmd = format!("SEND:{}\n", content);
+            stream.write_all(cmd.as_bytes())?;
+            
+            let mut response = [0u8; 4096];
+            match stream.read(&mut response) {
+                Ok(n) => {
+                    let response_str = String::from_utf8_lossy(&response[..n]);
+                    tracing::info!("Response: {}", response_str.trim());
+                }
+                Err(e) => tracing::warn!("Failed to read response: {}", e),
+            }
+        }
+        Err(e) => {
+            tracing::error!("Could not connect to daemon: {}", e);
+            anyhow::bail!("Daemon not running. Start Tortoise first with 'tortoise start'");
+        }
+    }
+    
     Ok(())
 }
 
