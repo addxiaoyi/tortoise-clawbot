@@ -1,103 +1,85 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/chat_provider.dart';
 
 class SessionsPage extends ConsumerWidget {
   const SessionsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final sessions = ref.watch(sessionsProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('会话列表'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.search),
+            icon: const Icon(Icons.add),
             onPressed: () {
-              // 搜索功能
+              ref.read(sessionsProvider.notifier).createSession();
             },
+            tooltip: '新建会话',
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: 20,
-        itemBuilder: (context, index) {
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              child: Icon(
-                Icons.chat,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-            title: Text('会话 ${index + 1}'),
-            subtitle: Text(
-              '最后活动: ${_getTimeAgo(index)} • 消息数: ${(index + 1) * 3}',
-            ),
-            trailing: PopupMenuButton(
-              itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 'rename',
-                  child: Row(
-                    children: [
-                      Icon(Icons.edit),
-                      SizedBox(width: 8),
-                      Text('重命名'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'export',
-                  child: Row(
-                    children: [
-                      Icon(Icons.download),
-                      SizedBox(width: 8),
-                      Text('导出'),
-                    ],
-                  ),
-                ),
-                const PopupMenuItem(
-                  value: 'delete',
-                  child: Row(
-                    children: [
-                      Icon(Icons.delete, color: Colors.red),
-                      SizedBox(width: 8),
-                      Text('删除', style: TextStyle(color: Colors.red)),
-                    ],
-                  ),
-                ),
-              ],
-              onSelected: (value) {
-                switch (value) {
-                  case 'rename':
-                    // 重命名逻辑
-                    break;
-                  case 'export':
-                    // 导出逻辑
-                    break;
-                  case 'delete':
-                    // 删除逻辑
-                    break;
-                }
+      body: sessions.isEmpty
+          ? _buildEmptyState(context)
+          : ListView.builder(
+              itemCount: sessions.length,
+              itemBuilder: (context, index) {
+                final session = sessions[index];
+                return _buildSessionTile(context, ref, session);
               },
             ),
-            onTap: () {
-              // 打开会话
-            },
-          );
-        },
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          // 创建新会话
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('新建会话'),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.chat_bubble_outline,
+            size: 80,
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            '还没有会话',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                ),
+          ),
+        ],
       ),
     );
   }
 
-  String _getTimeAgo(int index) {
-    final times = ['刚刚', '5 分钟前', '15 分钟前', '30 分钟前', '1 小时前', '2 小时前', '昨天', '3 天前'];
-    return times[index % times.length];
+  Widget _buildSessionTile(BuildContext context, WidgetRef ref, session) {
+    return ListTile(
+      leading: CircleAvatar(
+        backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        child: Icon(Icons.chat, color: Theme.of(context).colorScheme.primary),
+      ),
+      title: Text(session.title),
+      subtitle: Text(' 条消息'),
+      trailing: PopupMenuButton<String>(
+        itemBuilder: (context) => [
+          const PopupMenuItem(value: 'rename', child: Text('重命名')),
+          const PopupMenuItem(value: 'delete', child: Text('删除', style: TextStyle(color: Colors.red))),
+        ],
+        onSelected: (value) {
+          if (value == 'delete') {
+            ref.read(sessionsProvider.notifier).deleteSession(session.id);
+          }
+        },
+      ),
+      onTap: () {
+        ref.read(currentSessionProvider.notifier).state = session.id;
+      },
+    );
   }
 }
+
+final currentSessionProvider = StateProvider<String?>((ref) => null);
