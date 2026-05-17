@@ -6,16 +6,13 @@ WORKDIR /app
 # 安装构建依赖
 RUN apk add --no-cache git ca-certificates
 
-# 复制 go mod 文件
-COPY server/go.mod server/go.sum ./
-RUN go mod download
-
 # 复制源代码
-COPY server ./server
+COPY server /app/server
 
 # 构建
 WORKDIR /app/server
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o tortoise-server ./cmd/api
+RUN go mod download && \
+    CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o tortoise-server ./cmd/api
 
 # ============ 生产镜像 ============
 FROM alpine:3.19
