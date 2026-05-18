@@ -12,6 +12,7 @@ import '../../features/home/widgets/shell_scaffold.dart';
 import '../../features/voice/pages/voice_wake_page.dart';
 import '../../features/marketplace/pages/marketplace_page.dart';
 import '../../features/agents/pages/agents_page.dart';
+import '../../features/openhuman/pages/openhuman_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
