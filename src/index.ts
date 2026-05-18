@@ -1,23 +1,12 @@
 /**
- * 题库模块索引
- * 统一导出所有题库相关功能
+ * Tortoise Core - Agent Runtime Core
+ * 整合所有核心模块
  */
 
-export {
-  // 在线题库
-  OnlineQuestionBank,
-  createOnlineQuestionBank,
-  QUESTION_CATEGORIES,
-  type Question,
-  type SearchResult,
-  type QuestionBankConfig,
-} from "./OnlineQuestionBank";
+export * from './memory/memory-store';
+export * from './agent/agent-core';
+export * from './integrations/integration-manager';
 
-export {
-  // 考试题库
-  ExamQuestionBank,
-  createExamQuestionBank,
-  OPEN_SOURCE_QUESTION_BANKS,
-  type LocalQuestion,
-  type LocalQuestionBank,
-} from "./ExamQuestionBank";
+// 核心版本
+export const VERSION = '0.1.0';
+export const NAME = 'Tortoise';
