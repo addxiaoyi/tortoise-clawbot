@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../chat/providers/chat_provider.dart';
-import '../../chat/models/chat_models.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -10,196 +9,211 @@ class HomePage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessions = ref.watch(sessionsProvider);
-    final theme = Theme.of(context);
-
+    final recentSessions = sessions.take(5).toList();
+    
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Tortoise'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {
-              // TODO: Global search
-            },
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Color(0xFF667EEA), Color(0xFF764BA2)],
           ),
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              // TODO: Notifications
-            },
-          ),
-        ],
-      ),
-      body: CustomScrollView(
-        slivers: [
-          // Quick Actions
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '快速开始',
-                    style: theme.textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
+        ),
+        child: SafeArea(
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(
-                        child: _QuickActionCard(
-                          icon: Icons.chat,
-                          title: '新对话',
-                          color: Colors.blue,
-                          onTap: () {
-                            ref.read(sessionsProvider.notifier).createSession();
-                            context.go('/chat');
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _QuickActionCard(
-                          icon: Icons.mic,
-                          title: '语音助手',
-                          color: Colors.purple,
-                          onTap: () {
-                            context.go('/voice');
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _QuickActionCard(
-                          icon: Icons.cable,
-                          title: '渠道管理',
-                          color: Colors.green,
-                          onTap: () {
-                            context.go('/channels');
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _QuickActionCard(
-                          icon: Icons.extension,
-                          title: '插件市场',
-                          color: Colors.orange,
-                          onTap: () {
-                            context.go('/marketplace');
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Recent Sessions Header
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    '最近的对话',
-                    style: theme.textTheme.titleLarge,
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      context.go('/chat');
-                    },
-                    child: const Text('查看全部'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Recent Sessions List
-          sessions.isEmpty
-              ? SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.all(32),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.chat_bubble_outline,
-                          size: 64,
-                          color: theme.colorScheme.outline,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          '还没有对话',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: theme.colorScheme.outline,
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: const Icon(Icons.smart_toy, color: Colors.white, size: 32),
                           ),
-                        ),
-                        const SizedBox(height: 8),
-                        ElevatedButton.icon(
-                          onPressed: () {
-                            ref.read(sessionsProvider.notifier).createSession();
-                            context.go('/chat');
-                          },
-                          icon: const Icon(Icons.add),
-                          label: const Text('开始对话'),
-                        ),
-                      ],
-                    ),
-                  ),
-                )
-              : SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      if (index >= 5) return null;
-                      final session = sessions[index];
-                      return _SessionTile(session: session);
-                    },
-                    childCount: sessions.length > 5 ? 5 : sessions.length,
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Welcome',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  'What would you like to discuss today?',
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          CircleAvatar(
+                            radius: 24,
+                            backgroundColor: Colors.white.withValues(alpha: 0.2),
+                            child: const Icon(Icons.person, color: Colors.white),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                      _buildQuickActions(context),
+                      const SizedBox(height: 32),
+                      _buildStatsSection(),
+                      const SizedBox(height: 32),
+                      _buildRecentSessions(context, ref, recentSessions),
+                    ],
                   ),
                 ),
-          // Stats Section
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '统计信息',
-                    style: theme.textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _StatCard(
-                          title: '总对话数',
-                          value: '${sessions.length}',
-                          icon: Icons.chat_bubble,
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: _StatCard(
-                          title: '活跃渠道',
-                          value: '8',
-                          icon: Icons.cable,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActions(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Quick Actions',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _QuickActionCard(
+                icon: Icons.add_circle_outline,
+                title: 'New Chat',
+                color: const Color(0xFF10B981),
+                onTap: () => context.go('/chat'),
               ),
             ),
-          ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _QuickActionCard(
+                icon: Icons.cable,
+                title: 'Channels',
+                color: const Color(0xFF764BA2),
+                onTap: () => context.go('/channels'),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _QuickActionCard(
+                icon: Icons.psychology,
+                title: 'Memory',
+                color: const Color(0xFF11998E),
+                onTap: () => context.go('/memory'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _QuickActionCard(
+                icon: Icons.settings,
+                title: 'Settings',
+                color: const Color(0xFFFC466B),
+                onTap: () => context.go('/settings'),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatsSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _StatItem(label: 'Sessions', value: '12'),
+          Container(width: 1, height: 40, color: Colors.white.withValues(alpha: 0.3)),
+          _StatItem(label: 'Messages', value: '248'),
+          Container(width: 1, height: 40, color: Colors.white.withValues(alpha: 0.3)),
+          _StatItem(label: 'Channels', value: '5'),
         ],
       ),
+    );
+  }
+
+  Widget _buildRecentSessions(BuildContext context, WidgetRef ref, List sessions) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            const Text(
+              'Recent Sessions',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            TextButton(
+              onPressed: () => context.go('/chat/sessions'),
+              child: const Text(
+                'View All',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        if (sessions.isEmpty)
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: const Center(
+              child: Text(
+                'No recent sessions',
+                style: TextStyle(color: Colors.white70),
+              ),
+            ),
+          )
+        else
+          ...sessions.map((session) => _SessionTile(
+            session: session,
+            onTap: () {
+              ref.read(activeSessionIdProvider.notifier).state = session.id;
+              context.go('/chat');
+            },
+          )),
+      ],
     );
   }
 }
@@ -219,72 +233,39 @@ class _QuickActionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: color, size: 28),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleSmall,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-
-  const _StatCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      child: Padding(
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
         padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
         child: Row(
           children: [
-            Icon(icon, color: theme.colorScheme.primary),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
             const SizedBox(width: 12),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: theme.textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Text(
-                  title,
-                  style: theme.textTheme.bodySmall?.copyWith(
-                    color: theme.colorScheme.outline,
-                  ),
-                ),
-              ],
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: color,
+              ),
             ),
           ],
         ),
@@ -293,115 +274,103 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _SessionTile extends ConsumerWidget {
-  final ChatSession session;
+class _StatItem extends StatelessWidget {
+  final String label;
+  final String value;
 
-  const _SessionTile({required this.session});
+  const _StatItem({required this.label, required this.value});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final messageCount = session.messages.length;
-    final theme = Theme.of(context);
-
-    return ListTile(
-      leading: CircleAvatar(
-        child: Text(session.title.isNotEmpty ? session.title[0] : '?'),
-      ),
-      title: Text(session.title.isEmpty ? '新对话' : session.title),
-      subtitle: Text(
-        '$messageCount 条消息 • ${_formatDate(session.updatedAt)}',
-      ),
-      trailing: PopupMenuButton<String>(
-        onSelected: (value) {
-          switch (value) {
-            case 'delete':
-              ref.read(sessionsProvider.notifier).deleteSession(session.id);
-              break;
-            case 'rename':
-              _showRenameDialog(context, ref);
-              break;
-          }
-        },
-        itemBuilder: (context) => [
-          const PopupMenuItem(
-            value: 'rename',
-            child: Row(
-              children: [
-                Icon(Icons.edit),
-                SizedBox(width: 8),
-                Text('重命名'),
-              ],
-            ),
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
           ),
-          const PopupMenuItem(
-            value: 'delete',
-            child: Row(
-              children: [
-                Icon(Icons.delete),
-                SizedBox(width: 8),
-                Text('删除'),
-              ],
-            ),
-          ),
-        ],
-      ),
-      onTap: () {
-        ref.read(activeSessionIdProvider.notifier).state = session.id;
-        context.go('/chat');
-      },
-    );
-  }
-
-  void _showRenameDialog(BuildContext context, WidgetRef ref) {
-    final controller = TextEditingController(text: session.title);
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('重命名对话'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            labelText: '对话名称',
-          ),
-          autofocus: true,
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.7),
+            fontSize: 12,
           ),
-          ElevatedButton(
-            onPressed: () {
-              if (controller.text.isNotEmpty) {
-                ref.read(sessionsProvider.notifier).updateTitle(
-                  session.id,
-                  controller.text,
-                );
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('确定'),
-          ),
-        ],
+        ),
+      ],
+    );
+  }
+}
+
+class _SessionTile extends StatelessWidget {
+  final dynamic session;
+  final VoidCallback onTap;
+
+  const _SessionTile({required this.session, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.chat_bubble_outline, color: Colors.white, size: 20),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    session.title,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatTime(session.updatedAt),
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.6),
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.white.withValues(alpha: 0.5)),
+          ],
+        ),
       ),
     );
   }
 
-  String _formatDate(DateTime date) {
+  String _formatTime(DateTime time) {
     final now = DateTime.now();
-    final diff = now.difference(date);
-
-    if (diff.inDays == 0) {
-      if (diff.inHours == 0) {
-        return '${diff.inMinutes} 分钟前';
-      }
-      return '${diff.inHours} 小时前';
-    } else if (diff.inDays == 1) {
-      return '昨天';
-    } else if (diff.inDays < 7) {
-      return '${diff.inDays} 天前';
-    } else {
-      return '${date.month}/${date.day}';
-    }
+    final diff = now.difference(time);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return '${time.month}/${time.day}';
   }
 }

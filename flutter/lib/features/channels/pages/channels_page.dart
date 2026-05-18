@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/config/api_config.dart';
 
 class ChannelsPage extends ConsumerStatefulWidget {
   const ChannelsPage({super.key});
@@ -10,256 +9,204 @@ class ChannelsPage extends ConsumerStatefulWidget {
 }
 
 class _ChannelsPageState extends ConsumerState<ChannelsPage> {
-  final Map<String, bool> _enabledChannels = {
-    Channels.telegram: false,
-    Channels.discord: false,
-    Channels.slack: false,
-    Channels.whatsapp: false,
-    Channels.matrix: false,
-    Channels.email: false,
-    Channels.web: true,
+  final Map<String, bool> _channels = {
+    'Telegram': false,
+    'Discord': false,
+    'Slack': false,
+    'WhatsApp': false,
+    'Signal': false,
+    'Matrix': false,
+    'Email': false,
+    'SMS': false,
+  };
+
+  final Map<String, IconData> _icons = {
+    'Telegram': Icons.send,
+    'Discord': Icons.games,
+    'Slack': Icons.work,
+    'WhatsApp': Icons.chat,
+    'Signal': Icons.security,
+    'Matrix': Icons.grid_on,
+    'Email': Icons.email,
+    'SMS': Icons.sms,
+  };
+
+  final Map<String, Color> _colors = {
+    'Telegram': const Color(0xFF0088CC),
+    'Discord': const Color(0xFF5865F2),
+    'Slack': const Color(0xFF4A154B),
+    'WhatsApp': const Color(0xFF25D366),
+    'Signal': const Color(0xFF3A76F0),
+    'Matrix': const Color(0xFF0DBD8B),
+    'Email': const Color(0xFFEA4335),
+    'SMS': const Color(0xFF6B7280),
   };
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('消息渠道'),
+        backgroundColor: Colors.white,
+        title: const Text(
+          'Channels',
+          style: TextStyle(fontWeight: FontWeight.w600),
+        ),
+        elevation: 0,
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Text(
-            '已启用的渠道',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Connected Channels',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF64748B),
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: _enabledChannels.entries
-                .where((e) => e.value)
-                .map((e) => Chip(
-                      avatar: Icon(_getChannelIcon(e.key), size: 18),
-                      label: Text(Channels.names[e.key] ?? e.key),
-                      backgroundColor: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                    ))
-                .toList(),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            '所有渠道',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.bold,
+            const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _channels.entries
+                  .where((e) => e.value)
+                  .map((e) => Chip(
+                        avatar: Icon(_icons[e.key], size: 18, color: _colors[e.key]),
+                        label: Text(e.key),
+                        backgroundColor: _colors[e.key]!.withValues(alpha: 0.1),
+                      ))
+                  .toList(),
             ),
-          ),
-          const SizedBox(height: 8),
-          Card(
-            child: Column(
-              children: Channels.all.map((channel) {
-                return _ChannelTile(
-                  channel: channel,
-                  isEnabled: _enabledChannels[channel] ?? false,
-                  onToggle: (value) {
-                    setState(() {
-                      _enabledChannels[channel] = value ?? false;
-                    });
-                  },
-                  onConfigure: () => _showChannelConfig(context, channel),
+            const SizedBox(height: 32),
+            const Text(
+              'Available Channels',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1E293B),
+              ),
+            ),
+            const SizedBox(height: 16),
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.2,
+              ),
+              itemCount: _channels.length,
+              itemBuilder: (context, index) {
+                final entry = _channels.entries.elementAt(index);
+                return _ChannelCard(
+                  name: entry.key,
+                  icon: _icons[entry.key]!,
+                  color: _colors[entry.key]!,
+                  isConnected: entry.value,
+                  onTap: () => _showChannelConfig(entry.key),
                 );
-              }).toList(),
+              },
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  IconData _getChannelIcon(String channel) {
-    switch (channel) {
-      case Channels.telegram:
-        return Icons.send;
-      case Channels.discord:
-        return Icons.headset;
-      case Channels.slack:
-        return Icons.tag;
-      case Channels.whatsapp:
-        return Icons.chat;
-      case Channels.matrix:
-        return Icons.grid_view;
-      case Channels.email:
-        return Icons.email;
-      case Channels.sms:
-        return Icons.sms;
-      case Channels.web:
-        return Icons.language;
-      default:
-        return Icons.cable;
-    }
-  }
-
-  void _showChannelConfig(BuildContext context, String channel) {
+  void _showChannelConfig(String channel) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) => _ChannelConfigSheet(channel: channel),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => _ChannelConfigSheet(
+        channel: channel,
+        icon: _icons[channel]!,
+        color: _colors[channel]!,
+      ),
     );
   }
 }
 
-class _ChannelTile extends StatelessWidget {
-  final String channel;
-  final bool isEnabled;
-  final Function(bool?) onToggle;
-  final VoidCallback onConfigure;
+class _ChannelCard extends StatelessWidget {
+  final String name;
+  final IconData icon;
+  final Color color;
+  final bool isConnected;
+  final VoidCallback onTap;
 
-  const _ChannelTile({
-    required this.channel,
-    required this.isEnabled,
-    required this.onToggle,
-    required this.onConfigure,
+  const _ChannelCard({
+    required this.name,
+    required this.icon,
+    required this.color,
+    required this.isConnected,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      leading: Icon(_getChannelIcon(channel)),
-      title: Text(Channels.names[channel] ?? channel),
-      subtitle: Text(isEnabled ? '已连接' : '未连接'),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Switch(
-            value: isEnabled,
-            onChanged: onToggle,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isConnected ? color.withValues(alpha: 0.3) : Colors.grey.shade200,
           ),
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: onConfigure,
-          ),
-        ],
-      ),
-    );
-  }
-
-  IconData _getChannelIcon(String channel) {
-    switch (channel) {
-      case 'telegram':
-        return Icons.send;
-      case 'discord':
-        return Icons.headset;
-      case 'slack':
-        return Icons.tag;
-      case 'whatsapp':
-        return Icons.chat;
-      case 'matrix':
-        return Icons.grid_view;
-      case 'email':
-        return Icons.email;
-      case 'sms':
-        return Icons.sms;
-      case 'web':
-        return Icons.language;
-      default:
-        return Icons.cable;
-    }
-  }
-}
-
-class _ChannelConfigSheet extends StatefulWidget {
-  final String channel;
-
-  const _ChannelConfigSheet({required this.channel});
-
-  @override
-  State<_ChannelConfigSheet> createState() => _ChannelConfigSheetState();
-}
-
-class _ChannelConfigSheetState extends State<_ChannelConfigSheet> {
-  final _tokenController = TextEditingController();
-  final _webhookController = TextEditingController();
-
-  @override
-  void dispose() {
-    _tokenController.dispose();
-    _webhookController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(
-                  _getChannelIcon(widget.channel),
-                  size: 32,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-                const SizedBox(width: 12),
-                Text(
-                  '${Channels.names[widget.channel] ?? widget.channel} 配置',
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-              ],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
-            const SizedBox(height: 24),
-            if (_needsBotToken(widget.channel)) ...[
-              TextField(
-                controller: _tokenController,
-                decoration: const InputDecoration(
-                  labelText: 'Bot Token',
-                  hintText: '输入 Bot Token',
-                  prefixIcon: Icon(Icons.key),
-                ),
-                obscureText: true,
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
               ),
-              const SizedBox(height: 16),
-            ],
-            if (_needsWebhook(widget.channel)) ...[
-              TextField(
-                controller: _webhookController,
-                decoration: const InputDecoration(
-                  labelText: 'Webhook URL',
-                  hintText: '输入 Webhook URL',
-                  prefixIcon: Icon(Icons.link),
-                ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              name,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFF1E293B),
               ),
-              const SizedBox(height: 16),
-            ],
-            if (_needsOtherConfig(widget.channel)) ...[
-              _buildChannelSpecificFields(),
-              const SizedBox(height: 16),
-            ],
-            const SizedBox(height: 24),
+            ),
+            const SizedBox(height: 4),
             Row(
-              mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('取消'),
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: isConnected ? const Color(0xFF22C55E) : const Color(0xFF94A3B8),
+                    shape: BoxShape.circle,
+                  ),
                 ),
-                const SizedBox(width: 12),
-                ElevatedButton(
-                  onPressed: () {
-                    // 保存配置
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('配置已保存')),
-                    );
-                  },
-                  child: const Text('保存'),
+                const SizedBox(width: 6),
+                Text(
+                  isConnected ? 'Connected' : 'Not connected',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isConnected ? const Color(0xFF22C55E) : const Color(0xFF94A3B8),
+                  ),
                 ),
               ],
             ),
@@ -268,62 +215,79 @@ class _ChannelConfigSheetState extends State<_ChannelConfigSheet> {
       ),
     );
   }
+}
 
-  bool _needsBotToken(String channel) {
-    return ['telegram', 'discord', 'slack', 'whatsapp'].contains(channel);
-  }
+class _ChannelConfigSheet extends StatelessWidget {
+  final String channel;
+  final IconData icon;
+  final Color color;
 
-  bool _needsWebhook(String channel) {
-    return ['slack', 'discord'].contains(channel);
-  }
+  const _ChannelConfigSheet({
+    required this.channel,
+    required this.icon,
+    required this.color,
+  });
 
-  bool _needsOtherConfig(String channel) {
-    return ['email', 'sms'].contains(channel);
-  }
-
-  Widget _buildChannelSpecificFields() {
-    return Column(
-      children: [
-        TextField(
-          decoration: const InputDecoration(
-            labelText: 'SMTP 服务器',
-            hintText: 'smtp.example.com',
-            prefixIcon: Icon(Icons.dns),
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: color, size: 24),
+              ),
+              const SizedBox(width: 16),
+              Text(
+                channel,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
-        ),
-        const SizedBox(height: 12),
-        TextField(
-          decoration: const InputDecoration(
-            labelText: '端口',
-            hintText: '587',
-            prefixIcon: Icon(Icons.numbers),
+          const SizedBox(height: 24),
+          TextField(
+            decoration: InputDecoration(
+              labelText: 'API Token',
+              hintText: 'Enter your $channel API token',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            obscureText: true,
           ),
-          keyboardType: TextInputType.number,
-        ),
-      ],
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Connect',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      ),
     );
-  }
-
-  IconData _getChannelIcon(String channel) {
-    switch (channel) {
-      case 'telegram':
-        return Icons.send;
-      case 'discord':
-        return Icons.headset;
-      case 'slack':
-        return Icons.tag;
-      case 'whatsapp':
-        return Icons.chat;
-      case 'matrix':
-        return Icons.grid_view;
-      case 'email':
-        return Icons.email;
-      case 'sms':
-        return Icons.sms;
-      case 'web':
-        return Icons.language;
-      default:
-        return Icons.cable;
-    }
   }
 }
