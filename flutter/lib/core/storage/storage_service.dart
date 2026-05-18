@@ -121,7 +121,7 @@ class StorageService {
     final box = _hiveBoxes['sessions'];
     if (box == null) return [];
     return box.values
-        .where((v) => v is Map)
+        .whereType<Map>()
         .map((v) => Map<String, dynamic>.from(v as Map))
         .toList();
   }
@@ -149,7 +149,7 @@ class StorageService {
     final data = box?.get(sessionId);
     if (data == null) return [];
     if (data is List) {
-      return data.where((v) => v is Map).map((v) => Map<String, dynamic>.from(v as Map)).toList();
+      return data.whereType<Map>().map((v) => Map<String, dynamic>.from(v as Map)).toList();
     }
     return [];
   }

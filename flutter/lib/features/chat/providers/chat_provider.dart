@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 import '../models/chat_models.dart' as models;
-import '../../../core/ai/ai_engine.dart';
 
 const _uuid = Uuid();
 

@@ -62,21 +62,21 @@ class RecentSessionsWidget extends StatelessWidget {
   }
 
   static final List<RecentSession> _defaultSessions = [
-    RecentSession(
+    const RecentSession(
       id: '1',
       title: '关于AI助手开发的讨论',
       lastMessage: '今天天气怎么样？',
       updatedAt: '5 分钟前',
       messageCount: 24,
     ),
-    RecentSession(
+    const RecentSession(
       id: '2',
       title: 'Flutter 项目代码审查',
       lastMessage: '这个组件需要优化...',
       updatedAt: '30 分钟前',
       messageCount: 18,
     ),
-    RecentSession(
+    const RecentSession(
       id: '3',
       title: 'Rust 异步编程学习',
       lastMessage: 'Tokio 的工作原理是什么？',

@@ -15,23 +15,23 @@ class SettingsPage extends ConsumerWidget {
       ),
       body: ListView(
         padding: const EdgeInsets.all(24),
-        children: [
+        children: const [
           _Section(title: 'Account', children: [
             _Tile(icon: Icons.person, title: 'Profile', subtitle: 'Manage your account'),
             _Tile(icon: Icons.key, title: 'API Keys', subtitle: 'Configure AI providers'),
           ]),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           _Section(title: 'Preferences', children: [
             _Tile(icon: Icons.palette, title: 'Theme', subtitle: 'Light / Dark / System'),
             _Tile(icon: Icons.language, title: 'Language', subtitle: 'English'),
             _Tile(icon: Icons.notifications, title: 'Notifications', subtitle: 'Push & Email'),
           ]),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           _Section(title: 'Privacy', children: [
             _Tile(icon: Icons.security, title: 'Security', subtitle: 'Password & 2FA'),
             _Tile(icon: Icons.privacy_tip, title: 'Privacy', subtitle: 'Data & Analytics'),
           ]),
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           _Section(title: 'About', children: [
             _Tile(icon: Icons.info, title: 'About', subtitle: 'Version 0.1.0'),
             _Tile(icon: Icons.help, title: 'Help', subtitle: 'Documentation & Support'),

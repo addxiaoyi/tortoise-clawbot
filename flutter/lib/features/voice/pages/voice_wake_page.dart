@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:speech_to_text/speech_to_text.dart' as stt;
 import 'package:flutter_tts/flutter_tts.dart';
-import '../providers/voice_provider.dart';
 
 // Voice wake word settings provider
 final wakeWordProvider = StateProvider<String>((ref) => 'Hey Tortoise');

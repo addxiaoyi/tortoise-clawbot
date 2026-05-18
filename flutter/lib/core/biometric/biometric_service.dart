@@ -14,7 +14,7 @@ class BiometricService {
   static BiometricService get instance => _instance ??= BiometricService._();
   BiometricService._();
 
-  bool _isAvailable = false;
+  final bool _isAvailable = false;
 
   /// 检查是否可用
   Future<bool> isAvailable() async {

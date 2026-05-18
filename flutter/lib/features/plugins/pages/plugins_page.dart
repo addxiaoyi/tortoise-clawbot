@@ -443,7 +443,7 @@ class _PluginStoreSheet extends StatelessWidget {
               child: Icon(icon),
             ),
             title: Text('插件 ${index + 1}'),
-            subtitle: Text('插件描述...'),
+            subtitle: const Text('插件描述...'),
             trailing: OutlinedButton(
               onPressed: () {},
               child: const Text('安装'),

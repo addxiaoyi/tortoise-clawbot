@@ -434,7 +434,7 @@ class _PluginCard extends ConsumerWidget {
                     children: [
                       _buildStat(Icons.star, '${plugin.rating}', '评分'),
                       _buildStat(Icons.download, '${plugin.downloads}', '下载'),
-                      _buildStat(Icons.code, '${plugin.version}', '版本'),
+                      _buildStat(Icons.code, plugin.version, '版本'),
                     ],
                   ),
                   const SizedBox(height: 24),

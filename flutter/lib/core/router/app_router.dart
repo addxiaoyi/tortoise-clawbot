@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/chat/pages/chat_page.dart';
@@ -12,7 +11,6 @@ import '../../features/home/widgets/shell_scaffold.dart';
 import '../../features/voice/pages/voice_wake_page.dart';
 import '../../features/marketplace/pages/marketplace_page.dart';
 import '../../features/agents/pages/agents_page.dart';
-import '../../features/openhuman/pages/openhuman_page.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(

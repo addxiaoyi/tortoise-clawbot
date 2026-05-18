@@ -156,11 +156,11 @@ class HomePage extends ConsumerWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _StatItem(label: 'Sessions', value: '12'),
+          const _StatItem(label: 'Sessions', value: '12'),
           Container(width: 1, height: 40, color: Colors.white.withValues(alpha: 0.3)),
-          _StatItem(label: 'Messages', value: '248'),
+          const _StatItem(label: 'Messages', value: '248'),
           Container(width: 1, height: 40, color: Colors.white.withValues(alpha: 0.3)),
-          _StatItem(label: 'Channels', value: '5'),
+          const _StatItem(label: 'Channels', value: '5'),
         ],
       ),
     );

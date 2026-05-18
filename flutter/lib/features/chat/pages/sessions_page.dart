@@ -63,7 +63,7 @@ class SessionsPage extends ConsumerWidget {
         child: Icon(Icons.chat, color: Theme.of(context).colorScheme.primary),
       ),
       title: Text(session.title),
-      subtitle: Text(' 条消息'),
+      subtitle: const Text(' 条消息'),
       trailing: PopupMenuButton<String>(
         itemBuilder: (context) => [
           const PopupMenuItem(value: 'rename', child: Text('重命名')),

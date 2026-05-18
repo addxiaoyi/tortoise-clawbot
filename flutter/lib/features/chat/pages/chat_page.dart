@@ -12,7 +12,7 @@ class ChatPage extends ConsumerStatefulWidget {
 
 class _ChatPageState extends ConsumerState<ChatPage> {
   final _controller = TextEditingController();
-  bool _isLoading = false;
+  final bool _isLoading = false;
 
   @override
   void dispose() {
@@ -240,10 +240,10 @@ class _MessageBubble extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (!isUser) ...[
-            CircleAvatar(
+            const CircleAvatar(
               radius: 16,
-              backgroundColor: const Color(0xFF667EEA),
-              child: const Icon(Icons.smart_toy, color: Colors.white, size: 18),
+              backgroundColor: Color(0xFF667EEA),
+              child: Icon(Icons.smart_toy, color: Colors.white, size: 18),
             ),
             const SizedBox(width: 12),
           ],
